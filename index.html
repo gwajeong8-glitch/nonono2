@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Noblesse Time (최종 완성형: z-index 적용)</title>
+<title>Noblesse Time (최종 정리본)</title>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
@@ -49,7 +49,8 @@
         z-index:0;
         pointer-events:none;
     }
-    .bg img { width:100%; height:100%; object-fit:cover; display:block; }
+    /* 배경 이미지 경로가 'bok.png'가 아닐 경우, 이 부분을 실제 경로로 수정하세요. */
+    .bg img { width:100%; height:100%; object-fit:cover; display:block; } 
 
     /* ======================= 1. PNG 캡처 오류 수정을 위한 SELECT 스타일 ========================== */
     .canvas select {
@@ -59,7 +60,7 @@
         height:var(--select-height);
         font-size:28px;
 
-        /* ✅ PNG 캡처 시 글자가 아래로 오도록 상단 padding을 과감하게 늘림 */
+        /* ✅ 쏠림 방지를 위한 CSS */
         padding: 10px 5px 0 5px; 
         line-height: 40px; 
         box-sizing: border-box;
@@ -107,7 +108,7 @@
         top: 350px; 
         transform: translateX(-50%); 
         z-index: 6;
-        width: 900px; /* 짤림 방지 너비 확보 */
+        width: 900px; 
         color: var(--time-color); 
         font-size: 24px;
         font-weight: 500;
@@ -121,7 +122,7 @@
         position: absolute;
         left: 50%; 
         transform: translateX(-50%); 
-        z-index: 6; /* 기본 Z-index */
+        z-index: 6; 
         color: var(--time-color); 
         font-weight: 500;
         text-shadow: 0 3px 6px rgba(0,0,0,0.4);
@@ -130,16 +131,12 @@
         width: 600px; 
     }
     
-    /* 첫 번째 문구 (짤리는 문구)의 위치 및 짤림 방지 조정 */
+    /* 첫 번째 문구 (짤림 해결: width 950px, z-index 20) */
     #statusText1 {
         top: 590px; 
         font-size: 20px;
-        
-        /* 🔥 핵심 수정 1: 문장이 짤리지 않도록 너비 확장 */
         width: 950px; 
         white-space: normal;
-        
-        /* 🔥 핵심 수정 2: 다른 모든 이미지보다 위에 그려지도록 z-index를 높입니다. */
         z-index: 20; 
     }
 
@@ -197,12 +194,13 @@
     <div id="timeDisplay" aria-live="polite">시간 로딩중...</div>
     
     <div id="statusText1" class="status-text">완벽한 인연을 찾아.. 매칭 진행 중! 잠시만 기다려주세요...</div>
+    
     <div id="statusText2" class="status-text">잠시만 기다려주시면 노블레스가 당신의 특별한 인연을 찾아드립니다.</div>
 
 </div>
 
 <script>
-/* ===================== 데이터 및 기능 스크립트 (동일) ======================== */
+/* ===================== 데이터 및 기능 스크립트 (이하 동일) ======================== */
 const regionData = {
     "서울특별시": ["종로구","중구","용산구","성동구","광진구","동대문구","중랑구","성북구","강북구","도봉구","노원구","은평구","서대문구","마포구","양천구","강서구","구로구","금천구","영등포구","동작구","관악구","서초구","강남구","송파구","강동구"],
     "부산광역시": ["중구","서구","동구","영도구","부산진구","동래구","남구","북구","해운대구","사하구","금정구","강서구","연제구","수영구","사상구","기장군"],
