@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Noblesse Time (텍스트 분리형)</title>
+<title>Noblesse Time (최종 완성형)</title>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
@@ -72,7 +72,6 @@
         cursor: pointer;
         appearance: none;
     }
-    /* select 자체는 테두리가 없지만, 클릭 영역을 맞추기 위해 위치는 유지 */
     #sido { left: var(--select-left-1); top: var(--select-top); }
     #sigungu { left: var(--select-left-2); top: var(--select-top); }
 
@@ -93,20 +92,19 @@
         font-weight:600;
         text-align: center;
         
-        /* 텍스트 중앙 정렬: 이 부분을 원하는대로 조정하면 캡처 위치가 정확해짐 */
+        /* 텍스트 중앙 정렬: 이 부분을 조정하면 PNG 캡처 시 텍스트 위치가 정확해짐 */
         font-size: 28px;
-        line-height: var(--select-height); /* 52px */
+        line-height: var(--select-height); /* 55px */
         
         box-shadow:
             0 0 10px rgba(255, 230, 180, 0.4),
             inset 0 0 10px rgba(255, 230, 180, 0.25);
     }
     
-    /* Display Div의 위치는 Select와 동일하게 배치 */
     #sidoDisplay { left: var(--select-left-1); top: var(--select-top); }
     #sigunguDisplay { left: var(--select-left-2); top: var(--select-top); }
     
-    /* 시간 표시 요소 (위치 조정 안함) */
+    /* 시간 표시 요소 */
     #timeDisplay{
         position:absolute;
         left: var(--time-left);
@@ -119,7 +117,35 @@
         white-space: nowrap;
     }
 
-    /* 🔥 PNG 저장 버튼 (생략) */
+    /* ======================= 3. 하단 문구 위치 조정 (잘림 방지) ========================== */
+    #statusText1, #statusText2 {
+        position: absolute;
+        left: 50%; 
+        transform: translateX(-50%); 
+        z-index: 6;
+        color: var(--time-color); 
+        font-weight: 500;
+        text-shadow: 0 3px 6px rgba(0,0,0,0.4);
+        text-align: center;
+    }
+
+    /* 첫 번째 문구의 위치 조정 (캔버스 안으로 끌어올림) */
+    #statusText1 {
+        top: 590px; 
+        font-size: 20px;
+        white-space: nowrap; /* 줄바꿈 방지 */
+    }
+
+    /* 두 번째 문구의 위치 조정 (잘리는 문구) */
+    #statusText2 {
+        top: 640px; 
+        font-size: 18px;
+        /* 줄이 길 경우를 대비해 캡처 영역 확보 */
+        width: 600px; 
+        line-height: 1.5; 
+    }
+
+    /* 🔥 PNG 저장 버튼 */
     #saveBtn{
         position: fixed;
         top: 20px;
@@ -164,6 +190,9 @@
     <select id="sigungu" aria-label="시군구 선택"></select>
 
     <div id="timeDisplay" aria-live="polite">시간 로딩중...</div>
+    
+    <div id="statusText1">완벽한 인연을 찾아.. 매칭 진행 중! 잠시만 기다려주세요...</div>
+    <div id="statusText2">잠시만 기다려주시면 노블레스가 당신의 특별한 인연을 찾아드립니다.</div>
 
 </div>
 
@@ -191,11 +220,11 @@ const regionData = {
 
 const sido = document.getElementById('sido');
 const sigungu = document.getElementById('sigungu');
-const sidoDisplay = document.getElementById('sidoDisplay'); // 추가
-const sigunguDisplay = document.getElementById('sigunguDisplay'); // 추가
+const sidoDisplay = document.getElementById('sidoDisplay'); 
+const sigunguDisplay = document.getElementById('sigunguDisplay'); 
 const timeDisplay = document.getElementById('timeDisplay');
 
-/* 시도 / 시군구 셋팅 */
+/* 시도 / 시군구 셋팅 (동일) */
 function fillSidos(){
     sido.innerHTML = '';
     const ph = document.createElement('option');
@@ -229,17 +258,17 @@ function fillSigungu(sidoName){
         o.textContent = g;
         sigungu.appendChild(o);
     });
-    sigunguDisplay.textContent = '시·군·구 선택'; // 군구 목록이 바뀌면 표시도 초기화
+    sigunguDisplay.textContent = '시·군·구 선택'; 
 }
 
 /* ✅ Select 값이 바뀔 때 Display Div 업데이트 */
 sido.addEventListener('change', () => {
     fillSigungu(sido.value);
-    sidoDisplay.textContent = sido.value; // 선택된 시도 표시
+    sidoDisplay.textContent = sido.value; 
 });
 
 sigungu.addEventListener('change', () => {
-    sigunguDisplay.textContent = sigungu.value; // 선택된 시군구 표시
+    sigunguDisplay.textContent = sigungu.value; 
 });
 
 fillSidos();
@@ -273,16 +302,14 @@ function updateTime(){
 updateTime();
 setInterval(updateTime, 1000);
 
-/* ===================== PNG 다운로드 함수 (Select 요소는 무시됨) ===================== */
+/* ===================== PNG 다운로드 함수 (간단해짐) ===================== */
 document.getElementById("saveBtn").addEventListener("click", () => {
     const target = document.getElementById("canvas");
-
-    // Display Div는 일반 div이므로 렌더링 오류 없이 정확하게 캡처됨
 
     html2canvas(target, {
         scale: 2,
         useCORS: true,
-        // select 요소는 투명하게 처리했으므로 캡처에 특별한 조작 불필요
+        // select는 투명하고 display-div는 일반 div이므로 캡처 오류가 사라짐
     }).then(canvas => {
         const link = document.createElement("a");
         link.download = "noblesse.png";
