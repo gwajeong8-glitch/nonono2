@@ -31,7 +31,8 @@
         height:100%;
         margin:0;
         background: #000;
-        font-family: "Nanum Myeongjo", "KoPub Batang", serif;
+        /* Nanum Myeongjo 폰트가 없는 환경을 위해 시스템 폰트 포함 */
+        font-family: "Nanum Myeongjo", "KoPub Batang", serif; 
     }
 
     .canvas {
@@ -51,7 +52,7 @@
     }
     .bg img { width:100%; height:100%; object-fit:cover; display:block; }
 
-    /* ======================= 수정된 셀렉트 스타일 ========================== */
+    /* ======================= PNG 캡처 오류 수정을 위한 셀렉트 스타일 ========================== */
     .canvas select {
         position:absolute;
         z-index:5;
@@ -59,9 +60,9 @@
         height:var(--select-height);
         font-size:28px;
 
-        /* ✅ PNG 캡처 시 텍스트 쏠림 방지 및 중앙 정렬 최적화 */
-        padding: 5px 5px 0 5px; /* 상 5px, 우 5px, 하 0px, 좌 5px */
-        line-height: 48px; 
+        /* ✅ 수정 핵심: 텍스트 쏠림 방지를 위해 상단 padding을 늘려 글자를 아래로 밀어냄 */
+        padding: 10px 5px 0 5px; 
+        line-height: 40px; 
         box-sizing: border-box;
 
         color: var(--select-text);
@@ -69,7 +70,8 @@
         border: 2px solid rgba(200,167,107,0.95);
         border-radius:8px;
         outline:none;
-        appearance:none;
+        /* 브라우저 기본 화살표 제거 */
+        appearance:none; 
         font-weight:600;
         text-align: center;
 
@@ -95,6 +97,7 @@
     }
 
     .canvas select option {
+        /* 옵션 목록의 배경과 글자색을 명확히 설정 */
         background: #ffffff !important;
         color: #000000 !important;
     }
@@ -250,15 +253,16 @@ function updateTime(){
 updateTime();
 setInterval(updateTime, 1000);
 
-/* ===================== 수정된 PNG 다운로드 함수 ===================== */
+/* ===================== PNG 다운로드 함수 (캡처 스타일 수정 적용) ===================== */
 document.getElementById("saveBtn").addEventListener("click", () => {
     const target = document.getElementById("canvas");
     const selects = target.querySelectorAll('select');
     
     // ✅ 캡처 전에 select 요소 스타일 임시 수정 (텍스트 중앙 정렬)
     selects.forEach(s => {
+        // height 55px에 맞춰 line-height를 55px로 강제 설정하여 중앙 정렬 시도
         s.style.lineHeight = '55px'; 
-        s.style.padding = '0 5px';
+        s.style.padding = '0'; // padding은 0으로 초기화
     });
 
     html2canvas(target, {
