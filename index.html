@@ -58,27 +58,27 @@
     z-index:5;
     width:var(--select-width);
     height:var(--select-height);
+
+    display: flex;               /* 추가 */
+    align-items: center;         /* 세로 중앙 */
+    justify-content: center;     /* 가로 중앙 */
+
     font-size:28px;
-
-    /* 세로 중앙 정렬 해결 (line-height 빼고 padding 사용) */
-    padding-top: 10px;      /* ← 이거 추가 */
-    box-sizing: border-box; /* ← 이거 추가 */
-
+    font-weight:600;
     color: var(--select-text);
+
     background: rgba(0,0,0,0.35);
     border: 2px solid rgba(200,167,107,0.95);
     border-radius:8px;
     outline:none;
     appearance:none;
-    font-weight:600;
-    text-align: center;
-
+    padding: 0;
+    
     transition: 0.25s ease;
     box-shadow:
         0 0 10px rgba(255, 230, 180, 0.4),
         inset 0 0 10px rgba(255, 230, 180, 0.25);
 }
-
 
 .canvas select:hover {
     border-color: rgba(255, 220, 160, 1);
