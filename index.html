@@ -60,7 +60,9 @@
     height:var(--select-height);
     font-size:28px;
 
-    line-height: var(--select-height); /* ← 추가 (세로 중앙 정렬 핵심) */
+    /* 세로 중앙 정렬 해결 (line-height 빼고 padding 사용) */
+    padding-top: 6px;      /* ← 이거 추가 */
+    box-sizing: border-box; /* ← 이거 추가 */
 
     color: var(--select-text);
     background: rgba(0,0,0,0.35);
@@ -70,7 +72,6 @@
     appearance:none;
     font-weight:600;
     text-align: center;
-    padding: 0;
 
     transition: 0.25s ease;
     box-shadow:
