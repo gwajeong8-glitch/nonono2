@@ -60,6 +60,8 @@
     height:var(--select-height);
     font-size:28px;
 
+    line-height: var(--select-height); /* ← 추가 (세로 중앙 정렬 핵심) */
+
     color: var(--select-text);
     background: rgba(0,0,0,0.35);
     border: 2px solid rgba(200,167,107,0.95);
@@ -75,6 +77,7 @@
         0 0 10px rgba(255, 230, 180, 0.4),
         inset 0 0 10px rgba(255, 230, 180, 0.25);
 }
+
 
 .canvas select:hover {
     border-color: rgba(255, 220, 160, 1);
