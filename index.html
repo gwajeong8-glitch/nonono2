@@ -49,7 +49,14 @@
         z-index:0;
         pointer-events:none;
     }
-    .bg img { width:100%; height:100%; object-fit:cover; display:block; }
+    .bg img { 
+        width:100%; 
+        height:100%; 
+        object-fit:cover; 
+        display:block; 
+        /* 혹시 배경 수정 전이라면, 글씨가 조금이라도 더 보이게 중심점 이동 */
+        object-position: 75% center; 
+    }
 
     /* ======================= 1. 투명한 Select (선택 기능만 담당) ========================== */
     .canvas select {
@@ -93,7 +100,7 @@
         font-weight:600;
         text-align: center;
         
-        /* 텍스트 중앙 정렬: 이 부분을 원하는대로 조정하면 캡처 위치가 정확해짐 */
+        /* 텍스트 중앙 정렬 */
         font-size: 28px;
         line-height: var(--select-height); /* 55px */
         
@@ -106,7 +113,7 @@
     #sidoDisplay { left: var(--select-left-1); top: var(--select-top); }
     #sigunguDisplay { left: var(--select-left-2); top: var(--select-top); }
     
-    /* 시간 표시 요소 (위치 조정 안함) */
+    /* 시간 표시 요소 */
     #timeDisplay{
         position:absolute;
         left: var(--time-left);
@@ -119,7 +126,23 @@
         white-space: nowrap;
     }
 
-    /* 🔥 PNG 저장 버튼 (생략) */
+    /* 🔥 [새로 추가됨] 하단 안내 문구 */
+    #infoMessage {
+        position: absolute;
+        width: 100%;
+        text-align: center;
+        /* 위치는 이미지에 맞춰 숫자를 조절하세요 (약 720~750px 예상) */
+        top: 725px; 
+        z-index: 6;
+        
+        font-size: 26px;
+        font-weight: 600;
+        color: #FFD700; /* 노란색 */
+        text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        white-space: nowrap;
+    }
+
+    /* PNG 저장 버튼 */
     #saveBtn{
         position: fixed;
         top: 20px;
@@ -164,11 +187,13 @@
     <select id="sigungu" aria-label="시군구 선택"></select>
 
     <div id="timeDisplay" aria-live="polite">시간 로딩중...</div>
+    
+    <div id="infoMessage">완벽한 인연을 찾아.. 매칭 진행 중! 잠시만 기다려주세요</div>
 
 </div>
 
 <script>
-/* ===================== 시도/군구 데이터 (동일) ======================== */
+/* ===================== 시도/군구 데이터 ======================== */
 const regionData = {
     "서울특별시": ["종로구","중구","용산구","성동구","광진구","동대문구","중랑구","성북구","강북구","도봉구","노원구","은평구","서대문구","마포구","양천구","강서구","구로구","금천구","영등포구","동작구","관악구","서초구","강남구","송파구","강동구"],
     "부산광역시": ["중구","서구","동구","영도구","부산진구","동래구","남구","북구","해운대구","사하구","금정구","강서구","연제구","수영구","사상구","기장군"],
@@ -191,8 +216,8 @@ const regionData = {
 
 const sido = document.getElementById('sido');
 const sigungu = document.getElementById('sigungu');
-const sidoDisplay = document.getElementById('sidoDisplay'); // 추가
-const sigunguDisplay = document.getElementById('sigunguDisplay'); // 추가
+const sidoDisplay = document.getElementById('sidoDisplay');
+const sigunguDisplay = document.getElementById('sigunguDisplay');
 const timeDisplay = document.getElementById('timeDisplay');
 
 /* 시도 / 시군구 셋팅 */
@@ -229,17 +254,17 @@ function fillSigungu(sidoName){
         o.textContent = g;
         sigungu.appendChild(o);
     });
-    sigunguDisplay.textContent = '시·군·구 선택'; // 군구 목록이 바뀌면 표시도 초기화
+    sigunguDisplay.textContent = '시·군·구 선택';
 }
 
-/* ✅ Select 값이 바뀔 때 Display Div 업데이트 */
+/* Select 값이 바뀔 때 Display Div 업데이트 */
 sido.addEventListener('change', () => {
     fillSigungu(sido.value);
-    sidoDisplay.textContent = sido.value; // 선택된 시도 표시
+    sidoDisplay.textContent = sido.value;
 });
 
 sigungu.addEventListener('change', () => {
-    sigunguDisplay.textContent = sigungu.value; // 선택된 시군구 표시
+    sigunguDisplay.textContent = sigungu.value;
 });
 
 fillSidos();
@@ -252,14 +277,12 @@ fillSidos();
         sido.value = ds;
         fillSigungu(ds);
         if(regionData[ds].includes(dg)) sigungu.value = dg;
-        
-        // 초기값 설정 시 Display도 업데이트
         sidoDisplay.textContent = ds;
         sigunguDisplay.textContent = dg;
     }
 })();
 
-/* 실시간 시간 표시 (동일) */
+/* 실시간 시간 표시 */
 function updateTime(){
     const n = new Date();
     const y = n.getFullYear();
@@ -273,16 +296,13 @@ function updateTime(){
 updateTime();
 setInterval(updateTime, 1000);
 
-/* ===================== PNG 다운로드 함수 (Select 요소는 무시됨) ===================== */
+/* PNG 다운로드 함수 */
 document.getElementById("saveBtn").addEventListener("click", () => {
     const target = document.getElementById("canvas");
-
-    // Display Div는 일반 div이므로 렌더링 오류 없이 정확하게 캡처됨
 
     html2canvas(target, {
         scale: 2,
         useCORS: true,
-        // select 요소는 투명하게 처리했으므로 캡처에 특별한 조작 불필요
     }).then(canvas => {
         const link = document.createElement("a");
         link.download = "noblesse.png";
