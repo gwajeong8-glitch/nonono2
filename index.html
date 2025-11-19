@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Noblesse Time (최종 완성형)</title>
+<title>Noblesse Time (최종 완성형: z-index 적용)</title>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
@@ -51,59 +51,42 @@
     }
     .bg img { width:100%; height:100%; object-fit:cover; display:block; }
 
-    /* ======================= 1. 투명한 Select (선택 기능만 담당) ========================== */
+    /* ======================= 1. PNG 캡처 오류 수정을 위한 SELECT 스타일 ========================== */
     .canvas select {
         position:absolute;
-        z-index:10; /* 가장 위에 둬서 클릭 가능하게 */
+        z-index:5;
         width:var(--select-width);
         height:var(--select-height);
-        
-        /* 🔥 투명하게 만들어서 배경만 남김 */
-        background: transparent;
-        color: transparent; 
-        border: none;
-        outline: none;
-        
-        /* 폰트 크기를 유지해야 클릭 영역이 맞음 */
-        font-size: 28px; 
-        
-        /* 겉 테두리 및 그림자 제거 */
-        box-shadow: none;
-        cursor: pointer;
-        appearance: none;
-    }
-    #sido { left: var(--select-left-1); top: var(--select-top); }
-    #sigungu { left: var(--select-left-2); top: var(--select-top); }
+        font-size:28px;
 
-
-    /* ======================= 2. Display Div (표시 역할만 담당, 위치 자유) ========================== */
-    .display-box {
-        position: absolute;
-        z-index: 5; /* select 아래에 둠 */
-        width: var(--select-width);
-        height: var(--select-height);
+        /* ✅ PNG 캡처 시 글자가 아래로 오도록 상단 padding을 과감하게 늘림 */
+        padding: 10px 5px 0 5px; 
+        line-height: 40px; 
         box-sizing: border-box;
-        
-        /* 이전 select의 배경 스타일 재현 */
+
         color: var(--select-text);
         background: rgba(0,0,0,0.35);
         border: 2px solid rgba(200,167,107,0.95);
         border-radius:8px;
+        outline:none;
+        appearance:none;
         font-weight:600;
         text-align: center;
-        
-        /* 텍스트 중앙 정렬: 이 부분을 조정하면 PNG 캡처 시 텍스트 위치가 정확해짐 */
-        font-size: 28px;
-        line-height: var(--select-height); /* 55px */
-        
+
+        transition: 0.25s ease;
         box-shadow:
             0 0 10px rgba(255, 230, 180, 0.4),
             inset 0 0 10px rgba(255, 230, 180, 0.25);
     }
-    
-    #sidoDisplay { left: var(--select-left-1); top: var(--select-top); }
-    #sigunguDisplay { left: var(--select-left-2); top: var(--select-top); }
-    
+
+    .canvas select option {
+        background: #ffffff !important;
+        color: #000000 !important;
+    }
+
+    #sido { left: var(--select-left-1); top: var(--select-top); }
+    #sigungu { left: var(--select-left-2); top: var(--select-top); }
+
     /* 시간 표시 요소 */
     #timeDisplay{
         position:absolute;
@@ -117,35 +100,58 @@
         white-space: nowrap;
     }
 
-    /* ======================= 3. 하단 문구 위치 조정 (잘림 방지) ========================== */
-    #statusText1, #statusText2 {
+    /* ======================= 2. 중앙 문구 (노블레스가 당신의 운명을 불러옵니다) ========================== */
+    .heading-text {
+        position: absolute;
+        left: 50%; 
+        top: 350px; 
+        transform: translateX(-50%); 
+        z-index: 6;
+        width: 900px; /* 짤림 방지 너비 확보 */
+        color: var(--time-color); 
+        font-size: 24px;
+        font-weight: 500;
+        text-shadow: 0 3px 6px rgba(0,0,0,0.4);
+        text-align: center;
+        white-space: normal; 
+    }
+
+    /* ======================= 3. 하단 문구 스타일 및 위치 조정 (짤림 방지) ========================== */
+    .status-text {
         position: absolute;
         left: 50%; 
         transform: translateX(-50%); 
-        z-index: 6;
+        z-index: 6; /* 기본 Z-index */
         color: var(--time-color); 
         font-weight: 500;
         text-shadow: 0 3px 6px rgba(0,0,0,0.4);
         text-align: center;
+        /* 두 번째 문구 기본 넓이 */
+        width: 600px; 
     }
-
-    /* 첫 번째 문구의 위치 조정 (캔버스 안으로 끌어올림) */
+    
+    /* 첫 번째 문구 (짤리는 문구)의 위치 및 짤림 방지 조정 */
     #statusText1 {
         top: 590px; 
         font-size: 20px;
-        white-space: nowrap; /* 줄바꿈 방지 */
+        
+        /* 🔥 핵심 수정 1: 문장이 짤리지 않도록 너비 확장 */
+        width: 950px; 
+        white-space: normal;
+        
+        /* 🔥 핵심 수정 2: 다른 모든 이미지보다 위에 그려지도록 z-index를 높입니다. */
+        z-index: 20; 
     }
 
-    /* 두 번째 문구의 위치 조정 (잘리는 문구) */
+    /* 두 번째 문구의 위치 조정 */
     #statusText2 {
         top: 640px; 
         font-size: 18px;
-        /* 줄이 길 경우를 대비해 캡처 영역 확보 */
-        width: 600px; 
-        line-height: 1.5; 
+        line-height: 1.5;
+        white-space: normal;
     }
 
-    /* 🔥 PNG 저장 버튼 */
+    /* 🔥 PNG 저장 버튼 (동일) */
     #saveBtn{
         position: fixed;
         top: 20px;
@@ -183,21 +189,20 @@
 
     <div class="bg"><img src="bok.png" alt="background"></div>
 
-    <div id="sidoDisplay" class="display-box">시·도 선택</div>
-    <div id="sigunguDisplay" class="display-box">시·군·구 선택</div>
-
+    <div class="heading-text">노블레스가 당신의 운명을 불러옵니다</div> 
+    
     <select id="sido" aria-label="시도 선택"></select>
     <select id="sigungu" aria-label="시군구 선택"></select>
 
     <div id="timeDisplay" aria-live="polite">시간 로딩중...</div>
     
-    <div id="statusText1">완벽한 인연을 찾아.. 매칭 진행 중! 잠시만 기다려주세요...</div>
-    <div id="statusText2">잠시만 기다려주시면 노블레스가 당신의 특별한 인연을 찾아드립니다.</div>
+    <div id="statusText1" class="status-text">완벽한 인연을 찾아.. 매칭 진행 중! 잠시만 기다려주세요...</div>
+    <div id="statusText2" class="status-text">잠시만 기다려주시면 노블레스가 당신의 특별한 인연을 찾아드립니다.</div>
 
 </div>
 
 <script>
-/* ===================== 시도/군구 데이터 (동일) ======================== */
+/* ===================== 데이터 및 기능 스크립트 (동일) ======================== */
 const regionData = {
     "서울특별시": ["종로구","중구","용산구","성동구","광진구","동대문구","중랑구","성북구","강북구","도봉구","노원구","은평구","서대문구","마포구","양천구","강서구","구로구","금천구","영등포구","동작구","관악구","서초구","강남구","송파구","강동구"],
     "부산광역시": ["중구","서구","동구","영도구","부산진구","동래구","남구","북구","해운대구","사하구","금정구","강서구","연제구","수영구","사상구","기장군"],
@@ -220,11 +225,8 @@ const regionData = {
 
 const sido = document.getElementById('sido');
 const sigungu = document.getElementById('sigungu');
-const sidoDisplay = document.getElementById('sidoDisplay'); 
-const sigunguDisplay = document.getElementById('sigunguDisplay'); 
 const timeDisplay = document.getElementById('timeDisplay');
 
-/* 시도 / 시군구 셋팅 (동일) */
 function fillSidos(){
     sido.innerHTML = '';
     const ph = document.createElement('option');
@@ -258,18 +260,9 @@ function fillSigungu(sidoName){
         o.textContent = g;
         sigungu.appendChild(o);
     });
-    sigunguDisplay.textContent = '시·군·구 선택'; 
 }
 
-/* ✅ Select 값이 바뀔 때 Display Div 업데이트 */
-sido.addEventListener('change', () => {
-    fillSigungu(sido.value);
-    sidoDisplay.textContent = sido.value; 
-});
-
-sigungu.addEventListener('change', () => {
-    sigunguDisplay.textContent = sigungu.value; 
-});
+sido.addEventListener('change', () => fillSigungu(sido.value));
 
 fillSidos();
 
@@ -281,10 +274,6 @@ fillSidos();
         sido.value = ds;
         fillSigungu(ds);
         if(regionData[ds].includes(dg)) sigungu.value = dg;
-        
-        // 초기값 설정 시 Display도 업데이트
-        sidoDisplay.textContent = ds;
-        sigunguDisplay.textContent = dg;
     }
 })();
 
@@ -302,15 +291,27 @@ function updateTime(){
 updateTime();
 setInterval(updateTime, 1000);
 
-/* ===================== PNG 다운로드 함수 (간단해짐) ===================== */
+/* ===================== PNG 다운로드 함수 (임시 스타일 조정으로 쏠림 방지) ===================== */
 document.getElementById("saveBtn").addEventListener("click", () => {
     const target = document.getElementById("canvas");
+    const selects = target.querySelectorAll('select');
+    
+    // 캡처 직전에 select 글자가 중앙에 오도록 강제 조정
+    selects.forEach(s => {
+        s.style.padding = '10px 5px'; 
+        s.style.lineHeight = '35px'; 
+    });
 
     html2canvas(target, {
         scale: 2,
-        useCORS: true,
-        // select는 투명하고 display-div는 일반 div이므로 캡처 오류가 사라짐
+        useCORS: true
     }).then(canvas => {
+        // 캡처 완료 후 스타일 원복
+        selects.forEach(s => {
+            s.style.padding = ''; 
+            s.style.lineHeight = '';
+        });
+
         const link = document.createElement("a");
         link.download = "noblesse.png";
         link.href = canvas.toDataURL("image/png");
