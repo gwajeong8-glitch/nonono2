@@ -6,6 +6,30 @@
     <link rel="stylesheet" href="style.css"> 
     
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    
+    <style>
+        body {
+            /* ⚠️ 이 파일 경로를 사용자님의 실제 PNG 파일명으로 수정해야 합니다. */
+            /* 현재는 예시 파일명 'image_1f66e5.png'을 사용했습니다. */
+            background: url('vip.png') no-repeat center center fixed; 
+            background-size: cover;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            color: white;
+            overflow: hidden; /* 스크롤바 제거 */
+        }
+        .wrap {
+            /* body의 배경을 사용하기 위해 wrap의 배경색을 투명하게 설정하거나, 검은색 투명을 유지합니다. */
+            background-color: rgba(0, 0, 0, 0.5); 
+        }
+        
+        /* 설정 패널의 배경도 투명도를 유지하여 뒷 배경이 비치도록 합니다. */
+        .setting-panel {
+            background: rgba(0, 0, 0, 0.7); 
+            backdrop-filter: blur(5px);
+        }
+    </style>
 </head>
 <body>
 
@@ -36,7 +60,7 @@
 
     <div class="row-control" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #333; display: flex; justify-content: space-between;">
         <button id="addRowBtn" class="control-button" style="background-color: #008000; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px;">
-            ➕ 행 추가
+            ➕ 데이터 행 추가
         </button>
         <button id="deleteRowBtn" class="control-button" style="background-color: #8B0000; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px;">
             ➖ 마지막 행 삭제
@@ -140,9 +164,9 @@
             <tr class="bottom-data-header">
                 <td class="w-20" contenteditable="true">주문유형</td>
                 <td class="w-20" contenteditable="true">주문상세</td>
-                <td class="w-20" contenteditable="true">투자금액 (원)</td>
-                <td class="w-20" contenteditable="true">원금+수익금액</td>
-                <td class="w-20" contenteditable="true">보장비율</td>
+                <td contenteditable="true">투자금액 (원)</td>
+                <td contenteditable="true">원금+수익금액</td>
+                <td contenteditable="true">보장비율</td>
             </tr>
 
             <tr class="bottom-data-row">
