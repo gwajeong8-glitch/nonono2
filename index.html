@@ -14,7 +14,7 @@
     <button id="toggleEditMode" class="mode-button active" onclick="toggleEditMode()">
         🎨 현재 셀 **색상 편집** 모드 (클릭하여 셀 활성화)
     </button>
-    <div id="selectionModeInfo" style="display:none; color: #ffdd66; margin-top: 5px;">
+    <div id="selectionModeInfo" style="color: #ffdd66; margin-top: 5px; margin-bottom: 10px;">
         **클릭** 후 색상 설정으로 변경하세요.
     </div>
 
@@ -24,31 +24,10 @@
     </div>
     
     <div class="color-control">
-        <h3>🎨 테이블 스타일 설정</h3>
+        <h3>🎨 색상 팔레트 선택 (40색)</h3>
         
         <div class="color-palette-container">
             <div class="color-palette">
-            </div>
-            
-            <div class="color-panel global-control">
-                <label for="headerBgColor">헤더 배경 (전체)</label>
-                <input type="color" id="headerBgColor" value="#2196F3">
-            </div>
-            <div class="color-panel global-control">
-                <label for="headerTextColor">헤더 글자 (전체)</label>
-                <input type="color" id="headerTextColor" value="#ffffff">
-            </div>
-            <div class="color-panel global-control">
-                <label for="rowBgColor">데이터 행 배경 (전체)</label>
-                <input type="color" id="rowBgColor" value="#1B5E20">
-            </div>
-            <div class="color-panel global-control">
-                <label for="rowTextColor">데이터 행 글자 (전체)</label>
-                <input type="color" id="rowTextColor" value="#C8F7DC">
-            </div>
-            <div class="color-panel global-control">
-                <label for="colNumTextColor">코드/금액 강조색 (전역)</label>
-                <input type="color" id="colNumTextColor" value="#FF0000">
             </div>
         </div>
     </div>
@@ -65,6 +44,7 @@
         <div class="menu">VIP 회원 전용 통합 매니지먼트</div>
         <div class="menu">노블레스 회원 전용룸</div>
     </div>
+
     <div class="left-menu">
         <div class="left-item active">메인 화면</div>
         <div class="left-item">[매칭/고객 상태]</div>
