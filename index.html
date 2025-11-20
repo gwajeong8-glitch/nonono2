@@ -49,17 +49,6 @@
 <body>
 
 <div class="setting-panel" id="settingPanel">
-    <button class="mode-button active">
-        🎨 현재 셀 **색상 편집** 모드 (Shift+클릭 다중 선택)
-    </button>
-    <div style="color: #ffdd66; margin-top: 5px; margin-bottom: 10px;">
-        **Shift+클릭** 후 색상/크기 설정으로 변경하세요.
-    </div>
-
-    <div class="color-target-control">
-        <label><input type="radio" name="colorTarget" value="text" checked> 글자색 적용</label>
-        <label><input type="radio" name="colorTarget" value="background"> 배경색 적용</label>
-    </div>
     
     <div class="color-control">
         <h3>🎨 색상 팔레트 선택 (40색)</h3>
@@ -67,12 +56,6 @@
             </div>
     </div>
     
-    <div style="margin-top: 10px; padding-top: 5px; border-top: 1px solid #333;">
-        <label for="fontSizeInput">글꼴 크기 (px): </label>
-        <input type="number" id="fontSizeInput" min="8" max="48" value="14" style="width: 50px; margin-left: 5px; color: black;">
-        <button id="applyFontSizeBtn" style="margin-left: 5px; padding: 3px 8px; background: #555; color: white; border: none; border-radius: 3px; cursor: pointer;">적용</button>
-    </div>
-
     <button class="download-button" onclick="downloadImage('capture-area', 'noblesse_data_capture.png')">
         🖼️ 테이블 영역 이미지 다운로드 (PNG)
     </button>
