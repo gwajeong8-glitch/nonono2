@@ -200,3 +200,21 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.querySelector('.download-button').onclick = () => downloadImage('capture-area', 'noblesse_data_capture.png');
 });
+
+// --- 4. 🖱️ 왼쪽 메뉴 항목 색상 토글 기능 추가 ---
+
+document.addEventListener('DOMContentLoaded', () => {
+    // ... (기존 initializeResizers 호출 등은 유지) ... 
+    
+    const leftMenuItems = document.querySelectorAll('.left-item');
+
+    leftMenuItems.forEach(item => {
+        item.addEventListener('click', function() {
+            // 1. 모든 항목의 'active' 클래스를 제거합니다.
+            leftMenuItems.forEach(i => i.classList.remove('active'));
+            
+            // 2. 현재 클릭된 항목에만 'active' 클래스를 추가합니다.
+            this.classList.add('active');
+        });
+    });
+});
