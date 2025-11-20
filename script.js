@@ -2,6 +2,10 @@
 // 이미지 다운로드 함수 (html2canvas 사용)
 // ==========================================================
 function downloadImage() {
+    // 캡처 전에 활성 셀 하이라이트 제거
+    const activeCell = document.querySelector('.active-cell');
+    if (activeCell) activeCell.classList.remove('active-cell');
+
     const captureElement = document.getElementById('capture-area');
     
     // 로딩 표시 및 버튼 비활성화
@@ -10,16 +14,13 @@ function downloadImage() {
     button.textContent = '이미지 생성 중... 잠시만 기다려주세요.';
     button.disabled = true;
 
-    // html2canvas 실행: #capture-area 전체를 캡처
     html2canvas(captureElement, {
-        scale: 2, // 고해상도 출력을 위해 스케일 증가
+        scale: 2, 
         allowTaint: true,
         useCORS: true
     }).then(canvas => {
-        // 캔버스를 Data URL (PNG)로 변환
         const image = canvas.toDataURL('image/png');
 
-        // 다운로드를 위한 링크 요소 생성 및 실행
         const a = document.createElement('a');
         a.href = image;
         a.download = 'noblesse_dashboard_capture.png';
@@ -32,63 +33,196 @@ function downloadImage() {
         button.textContent = originalText;
         button.disabled = false;
         
+        // 캡처 후 활성 셀 하이라이트 복구
+        if (activeCell) activeCell.classList.add('active-cell');
+
     }).catch(error => {
-        // 에러 발생 시 처리
         console.error('이미지 생성 중 오류 발생:', error);
         button.textContent = '❌ 오류 발생 (콘솔 확인)';
         button.disabled = false;
-        alert('이미지 생성에 실패했습니다. (배경 이미지가 로컬 파일인 경우 보안 문제로 실패할 수 있습니다.)');
+        if (activeCell) activeCell.classList.add('active-cell');
+        alert('이미지 생성에 실패했습니다.');
     });
 }
 
 // ==========================================================
-// 기존 대시보드 기능 로직 (색상 변경, 저장 등)
+// 대시보드 기능 로직 (색상 변경, 저장 등)
 // ==========================================================
 
-document.addEventListener("DOMContentLoaded", () => {
-    // downloadImage 함수를 전역에서 호출 가능하도록 설정
-    window.downloadImage = downloadImage; 
-    
-    // --- 헬퍼 함수 ---
-    function setVar(name, value) {
-        document.documentElement.style.setProperty(name, value);
+// 현재 활성화된 셀 (클릭하여 색상 적용 대상)
+let currentActiveCell = null; 
+// 현재 색상 적용 대상 ('text' 또는 'background')
+let currentColorTarget = 'text';
+
+// ----------------------------------------------------
+// 헬퍼 함수 및 로컬 스토리지 관리
+// ----------------------------------------------------
+
+function setVar(name, value) {
+    document.documentElement.style.setProperty(name, value);
+}
+
+function saveSetting(key, value) {
+    if (value) {
+        localStorage.setItem(key, value);
     }
+}
+
+// 셀의 고유 ID를 생성합니다. (예: row-1-col-2)
+function getCellId(cell) {
+    const rowIndex = cell.closest('tr').rowIndex;
+    const colIndex = cell.cellIndex;
+    return `cell-${rowIndex}-${colIndex}`;
+}
+
+// 개별 셀의 커스텀 스타일을 로컬 스토리지에 저장합니다.
+function saveCellCustomStyle(cell, type, color) {
+    const id = getCellId(cell);
+    let styles = JSON.parse(localStorage.getItem('customCellStyles') || '{}');
     
-    function saveSetting(key, value) {
-        if (value) {
-            localStorage.setItem(key, value);
+    if (!styles[id]) {
+        styles[id] = {};
+    }
+    styles[id][type] = color; // type은 'color' 또는 'backgroundColor'
+    
+    localStorage.setItem('customCellStyles', JSON.stringify(styles));
+}
+
+// ----------------------------------------------------
+// 이벤트 핸들러 및 초기화
+// ----------------------------------------------------
+
+function applyColorToActiveTarget(color) {
+    if (currentActiveCell) {
+        const styleProp = currentColorTarget === 'text' ? 'color' : 'backgroundColor';
+        currentActiveCell.style[styleProp] = color;
+        saveCellCustomStyle(currentActiveCell, styleProp, color);
+    } else {
+        // 활성 셀이 없으면 일반 전역 컬러 피커에 값 적용 (기존 로직)
+        if (window.activeColorInput) {
+            const event = new Event('input', { bubbles: true });
+            window.activeColorInput.value = color;
+            window.activeColorInput.dispatchEvent(event);
         }
     }
+}
 
-    // --- 설정 로드 ---
-    function loadSettings() {
-        const settings = {
-            '--table-header-bg': "headerBgColor",
-            '--table-header-text': "headerTextColor",
-            '--table-row-bg': "rowBgColor",
-            '--table-row-text': "rowTextColor",
-            '--col-num-text-color': "colNumTextColor",
-        };
+// 셀 클릭 이벤트 핸들러
+function handleCellClick(event) {
+    const cell = event.currentTarget; 
 
-        for (const cssVar in settings) {
-            const inputId = settings[cssVar];
-            const storedValue = localStorage.getItem(inputId);
-            const inputElement = document.getElementById(inputId);
+    // 이전 활성 셀에서 active-cell 클래스 제거
+    if (currentActiveCell) {
+        currentActiveCell.classList.remove('active-cell');
+    }
+    
+    // 새 셀을 활성 셀로 설정 및 클래스 추가
+    currentActiveCell = cell;
+    currentActiveCell.classList.add('active-cell');
+    
+    // 현재 활성 셀의 색상을 컬러 피커에 반영 (옵션)
+    const styleProp = currentColorTarget === 'text' ? 'color' : 'backgroundColor';
+    let currentColor = getComputedStyle(cell)[styleProp];
+    
+    // 만약 셀에 인라인 스타일이 있다면 그 값을 사용
+    if (cell.style[styleProp]) {
+        currentColor = cell.style[styleProp];
+    } 
 
-            if (storedValue) {
-                setVar(cssVar, storedValue);
-                if (inputElement) {
-                    inputElement.value = storedValue;
-                }
+    // 컬러 피커 요소가 있다면 값을 설정
+    const colorInputId = window.activeColorInput ? window.activeColorInput.id : (currentColorTarget === 'text' ? 'rowTextColor' : 'rowBgColor');
+    const activeInput = document.getElementById(colorInputId);
+    
+    if (activeInput) {
+        // RGB를 HEX로 변환하는 간단한 로직 (완벽하지 않을 수 있지만 시각적 피드백 제공)
+        function rgbToHex(rgb) {
+            if (!rgb || rgb.startsWith('var')) return '#000000'; // 변수나 null 처리
+            const hex = x => ('0' + parseInt(x).toString(16)).slice(-2);
+            if (rgb.startsWith('rgb')) {
+                const parts = rgb.match(/\d+/g);
+                return parts ? '#' + hex(parts[0]) + hex(parts[1]) + hex(parts[2]) : '#000000';
             }
+            return rgb;
         }
+
+        activeInput.value = rgbToHex(currentColor);
+        window.activeColorInput = activeInput; // 활성 컬러 피커 업데이트
+        saveSetting('activeColorInput', activeInput.id);
     }
+}
+
+// '셀 편집 모드' 토글 함수
+function toggleEditMode() {
+    const button = document.getElementById('toggleEditMode');
+    const info = document.getElementById('selectionModeInfo');
     
+    // 현재는 이 버튼이 항상 '색상 편집 모드'를 나타내므로,
+    // 간단히 시각적 피드백만 제공합니다.
+    button.classList.add('active');
+    info.style.display = 'block'; 
+    
+    if (currentActiveCell) {
+        currentActiveCell.classList.remove('active-cell');
+        currentActiveCell = null;
+    }
+}
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    window.downloadImage = downloadImage; 
+    window.toggleEditMode = toggleEditMode;
+    
+    // --- 초기화 및 전역 설정 로드 ---
     loadSettings();
 
-    // --- 이벤트 리스너 설정 ---
+    // ----------------------------------------------------
+    // 1. 개별 셀 스타일 로드 (매우 중요)
+    // ----------------------------------------------------
+    function loadCustomCellStyles() {
+        const styles = JSON.parse(localStorage.getItem('customCellStyles') || '{}');
+        const allCells = document.querySelectorAll('.data-table td');
+
+        allCells.forEach(cell => {
+            const id = getCellId(cell);
+            if (styles[id]) {
+                if (styles[id].color) {
+                    cell.style.color = styles[id].color;
+                }
+                if (styles[id].backgroundColor) {
+                    cell.style.backgroundColor = styles[id].backgroundColor;
+                }
+            }
+        });
+    }
+
+    loadCustomCellStyles(); // 커스텀 스타일 적용
+
+    // ----------------------------------------------------
+    // 2. 셀 이벤트 리스너 설정
+    // ----------------------------------------------------
+    const tableCells = document.querySelectorAll('.data-table td');
+    tableCells.forEach(cell => {
+        // 셀 클릭 시 활성 셀로 지정
+        cell.addEventListener('click', handleCellClick);
+    });
+
+    // 색상 적용 대상 라디오 버튼 이벤트 리스너
+    const colorTargetRadios = document.getElementsByName('colorTarget');
+    colorTargetRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            currentColorTarget = e.target.value;
+            // 대상이 바뀌면 현재 활성 셀의 색상을 피커에 반영 (사용자 피드백)
+            if (currentActiveCell) {
+                handleCellClick({ currentTarget: currentActiveCell }); 
+            }
+        });
+    });
+
+    // ----------------------------------------------------
+    // 3. 기존의 전역 컬러 로직
+    // ----------------------------------------------------
     
-    // 왼쪽 메뉴 active 토글
+    // 왼쪽 메뉴 active 토글 (기존 기능 유지)
     const leftItems = document.querySelectorAll(".left-item");
     leftItems.forEach(item => {
         item.addEventListener("click", () => {
@@ -97,7 +231,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // 컬러 입력 요소 ID 매칭
     const headerBg = document.getElementById("headerBgColor");
     const headerText = document.getElementById("headerTextColor");
     const rowBg = document.getElementById("rowBgColor");
@@ -118,7 +251,6 @@ document.addEventListener("DOMContentLoaded", () => {
     ];
     let activeColorInput = headerBg;
 
-    // 1. 저장된 활성 색상 불러오기
     const storedActiveId = localStorage.getItem('activeColorInput');
     if (storedActiveId) {
         const storedActiveInput = document.getElementById(storedActiveId);
@@ -126,43 +258,43 @@ document.addEventListener("DOMContentLoaded", () => {
             activeColorInput = storedActiveInput;
         }
     }
-    window.activeColorInput = activeColorInput; // 전역 변수로 설정
+    window.activeColorInput = activeColorInput; 
 
-    // 2. 색상 버튼 생성 및 추가
     presetColors.forEach(color => {
         const swatch = document.createElement('div');
         swatch.className = 'color-swatch';
         swatch.style.backgroundColor = color;
-        swatch.dataset.color = color;
         
+        // 팔레트 클릭 시: 활성 셀이 있으면 셀에 적용, 없으면 전역 피커에 적용
         swatch.addEventListener('click', () => {
-            if (window.activeColorInput) {
-                const event = new Event('input', { bubbles: true });
-                window.activeColorInput.value = color; 
-                window.activeColorInput.dispatchEvent(event); 
-            }
+            applyColorToActiveTarget(color);
         });
         colorPaletteElement.appendChild(swatch);
     });
 
-    // 3. 모든 컬러 입력 필드에 'focus' 이벤트 리스너 추가
+    // 4. 컬러 입력 필드 이벤트 리스너 (전역/활성 셀 모두 제어)
     const colorInputs = document.querySelectorAll('.color-panel input[type="color"]');
     colorInputs.forEach(input => {
+        // A. 'focus' 이벤트: 활성 피커 설정
         input.addEventListener('focus', () => {
             window.activeColorInput = input;
             saveSetting('activeColorInput', input.id);
+            // 활성 셀이 있으면 하이라이트 해제 (전역 설정과 충돌 방지)
+            if (currentActiveCell) {
+                 currentActiveCell.classList.remove('active-cell');
+                 currentActiveCell = null;
+            }
         });
         input.parentElement.addEventListener('click', () => {
             input.focus();
         });
+        
+        // B. 'input' 이벤트: 색상 변경 적용 (활성 셀이 없어야 전역 설정)
+        if (input.id === 'headerBgColor') input.addEventListener("input", e => { setVar('--table-header-bg', e.target.value); saveSetting('headerBgColor', e.target.value); });
+        if (input.id === 'headerTextColor') input.addEventListener("input", e => { setVar('--table-header-text', e.target.value); saveSetting('headerTextColor', e.target.value); });
+        if (input.id === 'rowBgColor') input.addEventListener("input", e => { setVar('--table-row-bg', e.target.value); saveSetting('rowBgColor', e.target.value); });
+        if (input.id === 'rowTextColor') input.addEventListener("input", e => { setVar('--table-row-text', e.target.value); saveSetting('rowTextColor', e.target.value); });
+        if (input.id === 'colNumTextColor') input.addEventListener("input", e => { setVar('--col-num-text-color', e.target.value); saveSetting('colNumTextColor', e.target.value); });
+
     });
-
-    // --- 이벤트 리스너 설정 (저장 로직 통합) ---
-    
-    if (headerBg) headerBg.addEventListener("input", e => { setVar('--table-header-bg', e.target.value); saveSetting('headerBgColor', e.target.value); });
-    if (headerText) headerText.addEventListener("input", e => { setVar('--table-header-text', e.target.value); saveSetting('headerTextColor', e.target.value); });
-    if (rowBg) rowBg.addEventListener("input", e => { setVar('--table-row-bg', e.target.value); saveSetting('rowBgColor', e.target.value); });
-    if (rowText) rowText.addEventListener("input", e => { setVar('--table-row-text', e.target.value); saveSetting('rowTextColor', e.target.value); });
-
-    if (colNumText) colNumText.addEventListener("input", e => { setVar('--col-num-text-color', e.target.value); saveSetting('colNumTextColor', e.target.value); });
 });
