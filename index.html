@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>실시간 데이터 현황 - 노블레스 통합 매니지먼트</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css"> 
+    
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </head>
 <body>
 
@@ -11,14 +13,9 @@
     <div class="color-control">
         <h3>🎨 테이블 스타일 설정</h3>
         
-        <div class="size-control">
-            <label for="fontSizeInput">표 글자 크기 (px)</label>
-            <input type="number" id="fontSizeInput" value="8" min="5" max="20" step="1">
-        </div>
-        
         <div class="color-palette-container">
             <div class="color-palette">
-                </div>
+            </div>
             <div class="color-panel">
                 <label for="headerBgColor">헤더 배경</label>
                 <input type="color" id="headerBgColor" value="#2196F3">
@@ -41,6 +38,10 @@
             </div>
         </div>
     </div>
+    
+    <button class="download-button" onclick="downloadImage()">
+        🖼️ 테이블 영역 이미지 다운로드 (PNG)
+    </button>
 </div>
 
 <div class="wrap" id="capture-area"> 
@@ -150,7 +151,7 @@
             <tr class="bottom-data-row">
                 <td contenteditable="true">B</td>
                 <td contenteditable="true">[2종택1]</td>
-                <td contenteditable="true" class="red-text">2,500,000</td>
+                <td contenteditable="true">2,500,000</td>
                 <td contenteditable="true">2,750,000</td>
                 <td contenteditable="true" class="red-text">100%</td>
             </tr>
