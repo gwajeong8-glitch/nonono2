@@ -161,7 +161,6 @@
     background: var(--table-header-bg); 
     color: var(--table-header-text); 
     font-weight: 700;
-    /* 높이는 index.html에서 !important로 강제 조정됨 */
     font-size: 14px;
     width: 20%; 
 }
@@ -169,7 +168,6 @@
 /* 하단 데이터 행 */
 .data-table .bottom-data-row td {
     font-weight: 700;
-    /* 높이는 index.html에서 !important로 강제 조정됨 */
     font-size: 14px;
 }
 .data-table .bottom-data-row .red-text {
