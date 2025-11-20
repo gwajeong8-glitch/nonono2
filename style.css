@@ -1,262 +1,239 @@
-:root{
-    /* 기본값 (테이블 기본 스타일 유지) */
-    --table-header-bg: #2196F3;
-    --table-header-text: #ffffff;
-    --table-row-bg: #1B5E20; /* 녹색 행 배경 */
-    --table-row-text: #C8F7DC; /* 밝은 녹색 행 글자 */
-    --table-border: rgba(255,255,255,0.15);
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>노블레스 데이터 현황 (편집 기능 최종)</title>
+    <link rel="stylesheet" href="style.css"> 
     
-    /* 고정 색상 */
-    --yellow-bg: #FFD700;
-    --dark-text: #1A1A1A;
-    --red-highlight: #FF0000; 
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     
-    --col-num-text-color: var(--red-highlight); 
-}
+    <style>
+        body {
+            /* 🚀 배경 이미지 위치 조정 (200px 아래로) */
+            background: url('vip.png') no-repeat center 0px fixed; 
+            background-size: auto; 
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            color: white;
+            overflow: hidden; 
+        }
+        .wrap {
+            background-color: transparent; 
+        }
+        
+        .setting-panel {
+            background: rgba(0, 0, 0, 0.7); 
+            backdrop-filter: blur(5px);
+        }
+        
+        /* 💡 높이 강제 축소 규칙 (JavaScript로 높이 조절 가능하도록 !important 제거) */
+        .bottom-data-header td, .bottom-data-row td {
+            height: 10px; 
+            padding-top: 0px; 
+            padding-bottom: 0px; 
+            font-size: 8px; 
+            line-height: 1; 
+        }
+        .bottom-data-header, .bottom-data-row {
+            height: 10px; 
+        }
+        
+        /* 🚀 [추가] 크기 표시기 스타일 */
+        .resizer-display {
+            position: fixed;
+            background: rgba(255, 255, 255, 0.9);
+            color: black;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 200;
+            opacity: 0;
+            transition: opacity 0.1s;
+        }
+        /* 📐 그룹별 높이 조절 버튼 스타일 */
+        .height-apply-btn {
+            padding: 3px 8px; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 3px; 
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
 
-/* 래퍼 (캡처 대상 영역) */
-.wrap{
-    width:1024px;
-    height:490px;
-    margin:20px auto 0 auto; 
-    position:relative;
-    overflow: hidden;
-}
+<div class="setting-panel" id="settingPanel">
+    
+    <div style="color: #ffdd66; margin-top: 5px; margin-bottom: 10px;">
+        **Shift 키로 셀 선택** 후 색상/크기 설정으로 변경하세요.
+    </div>
+    
+    <div class="color-target-control">
+        <label><input type="radio" name="colorTarget" value="text" checked> 글자색 적용</label>
+        <label><input type="radio" name="colorTarget" value="background"> 배경색 적용</label>
+    </div>
+    
+    <div class="color-control">
+        <h3>🎨 색상 팔레트 선택 (40색)</h3>
+        <div class="color-palette">
+        </div>
+    </div>
+    
+    <div style="margin-top: 10px; padding-top: 5px; border-top: 1px solid #333;">
+        <label for="fontSizeInput">글꼴 크기 (px): </label>
+        <input type="number" id="fontSizeInput" min="8" max="48" value="14" style="width: 50px; margin-left: 5px; color: black;">
+        <button id="applyFontSizeBtn" style="margin-left: 5px; padding: 3px 8px; background: #555; color: white; border: none; border-radius: 3px; cursor: pointer;">적용</button>
+    </div>
+    
+    <div style="margin-top: 10px; padding-top: 5px; border-top: 1px solid #333;">
+        <h3>📐 그룹별 행 높이 (px)</h3>
+        
+        <label for="topRowHeightInput" style="display: block; margin-top: 5px;">상단 데이터 행 높이:</label>
+        <input type="number" id="topRowHeightInput" min="15" max="60" value="15" style="width: 50px; color: black;">
+        <button id="applyTopRowHeightBtn" class="height-apply-btn" data-target="top-data" style="margin-left: 5px;">적용</button>
 
-/* 상단 탭 */
-.top-sub-menu{
-    position:absolute;
-    top:30px;
-    left:190px;
-    display:flex;
-    gap:20px;
-    z-index:5;
-}
-.top-sub-menu .menu{
-    background:rgba(160,160,160,0.3);
-    padding:8px 15px;
-    border-radius:5px;
-    font-size:14px;
-}
+        <label for="middleRowHeightInput" style="display: block; margin-top: 5px;">중단 공지/제목 행 높이:</label>
+        <input type="number" id="middleRowHeightInput" min="20" max="100" value="30" style="width: 50px; color: black;">
+        <button id="applyMiddleRowHeightBtn" class="height-apply-btn" data-target="middle-notice" style="margin-left: 5px;">적용</button>
 
-/* 왼쪽 메뉴 */
-.left-menu{
-    position:absolute;
-    left:50px;
-    top:100px;
-    width:115px;
-    line-height:16px;
-    font-size:13px;
-    z-index:5;
-}
-.left-item{
-    padding:1px 0;
-    cursor:pointer;
-    transition:0.15s;
-}
-.left-item.active{
-    color:#ffdd66;
-    font-weight:700;
-    text-shadow:0 0 6px #ffdd66;
-}
-/* 표 */
-.data-table{
-    position:absolute;
-    top:80px;
-    left:155px; 
-    width:730px; 
-    border-collapse:collapse;
-    font-size:8px;
-    z-index:4;
-    overflow:hidden;
-    box-shadow:0 2px 0 rgba(0,0,0,0.35);
-}
+        <label for="bottomRowHeightInput" style="display: block; margin-top: 5px;">하단 데이터 행 높이:</label>
+        <input type="number" id="bottomRowHeightInput" min="10" max="60" value="15" style="width: 50px; color: black;">
+        <button id="applyBottomRowHeightBtn" class="height-apply-btn" data-target="bottom-data" style="margin-left: 5px;">적용</button>
+    </div>
+    <button class="download-button" onclick="downloadImage('capture-area', 'noblesse_data_capture.png')">
+        🖼️ 테이블 영역 이미지 다운로드 (PNG)
+    </button>
+</div>
 
-/* 테이블 셀 기본 스타일 */
-.data-table td{
-    background: var(--table-row-bg); 
-    color: var(--table-row-text); 
-    padding:2px 2px; 
-    min-height:16px;
-    text-align:center;
-    border-bottom:1px solid var(--table-border);
-    border-right:1px solid var(--table-border);
-    white-space: nowrap;
-    outline: none; 
-}
+<div class="wrap" id="capture-area"> 
 
-/* 마지막 셀의 오른쪽 경계선 제거 */
-.data-table tr td:last-child {
-    border-right: none;
-}
+    <div class="top-sub-menu">
+        <div class="menu">블레스 전국 프레스티지 서비스</div>
+        <div class="menu">VIP 회원 전용 통합 매니지먼트</div>
+        <div class="menu">노블레스 회원 전용룸</div>
+    </div>
+    
+    <div class="left-menu">
+        <div class="left-item active">메인 화면</div>
+        <div class="left-item">[매칭/고객 상태]</div>
+        <div class="left-item">주문 상태</div>
+        <div class="left-item">인증 상태</div>
+        <div class="left-item">[상담/문의]</div>
+        <div class="left-item">직무 문의</div>
+        <div class="left-item">전국 만남</div>
+        <div class="left-item">[관리/데이터]</div>
+        <div class="left-item">실시간 데이터</div>
+        <div class="left-item">실시간 오류</div>
+        <div class="left-item">데이터 분석</div>
+        <div class="left-item">포인트 조회</div>
+        <div class="left-item">유흥 관리</div>
+        <div class="left-item">회원 관리</div>
+        <div class="left-item">회원 승인</div>
+        <div class="left-item">회원 탈퇴</div>
+        <div class="left-item">담당 실장</div>
+    </div>
 
-/* 활성 셀(td) 스타일: 클릭 시 테두리로 강조 */
-.data-table td.selected {
-    outline: 2px solid #FFD700 !important; 
-    outline-offset: -2px;
-    cursor: pointer;
-}
+    <table class="data-table">
+        <tbody>
+            <tr class="top-notice-row">
+                <td colspan="5" contenteditable="true"> 
+                    <span class="top-notice-mark">DAMAGE!</span> 주의사항 4단계에서 일치 파트너십으로 통합된 유형만을 선택하여 공유 임무를 완료하며 함께 할때의 금일 결제 금액 후 공동 이익을 마감해야 합니다!
+                </td>
+            </tr>
+            
+            <tr class="top-data-header">
+                <td contenteditable="true">회원ID</td>
+                <td contenteditable="true">주문상태</td>
+                <td contenteditable="true">인증상태</td> 
+                <td contenteditable="true">활성화 코드</td> 
+                <td contenteditable="true">승인된 암호 코드</td> 
+            </tr>
+            
+            <tr class="top-data-row">
+                <td contenteditable="true">jkgov1203</td>
+                <td contenteditable="true">발송 완료</td>
+                <td contenteditable="true">승인 완료</td>
+                <td contenteditable="true">NSACT2032897</td>
+                <td contenteditable="true">NBS001001001</td> 
+            </tr>
+            <tr class="top-data-row">
+                <td contenteditable="true">sxcv4752</td>
+                <td contenteditable="true">검수 대기</td>
+                <td contenteditable="true">미승인</td>
+                <td contenteditable="true">NSACT2032898</td>
+                <td contenteditable="true">NBS001001002</td> 
+            </tr>
+            <tr class="top-data-row">
+                <td contenteditable="true">qwerty24689</td>
+                <td contenteditable="true">진행 중</td>
+                <td contenteditable="true">승인 완료</td>
+                <td contenteditable="true">NSACT2032899</td>
+                <td contenteditable="true">NBS001001003</td> 
+            </tr>
+            <tr class="top-data-row">
+                <td contenteditable="true">xsgf1575</td>
+                <td contenteditable="true">발송 오류</td>
+                <td contenteditable="true">비활성화</td>
+                <td contenteditable="true">NSACT2032891</td>
+                <td contenteditable="true">NBS001001004</td> 
+            </tr>
+                        
+            <tr class="middle-notice-row">
+                <td colspan="5" contenteditable="true"> 
+                    1. 위 공동구매 회원들이 클리어 데이터를 지시에 따라 진행하지 못하여 실패로 인해 회원가입 및 계정 비활성화되어 출금불가 <br>
+                    2. 상호협력의 발전목적을 실천하기 위해 공식적으로 1~2회 연속 클리어수정을 특별히 승인하였으며, 수정주문은 만장일치로 합의되어야 합니다.<br>
+                    3. 수정주문은 계좌와 계좌 이상 데이터 복구 후 출금 코드를 매니저 갱신을 완료해야 출금가능하며 데이터 완료 이전에는 현금 출금이 불가능합니다<br>
+                    4.정산시스템에서 승인할 수 없어 출금할수 없게 되었습니다. 데이터 완료 이전에는 현금 출금이 불가능합니다.<br>
+                    (예: 부활 포기한 계정의 경우 포인트출금 불가)
+                </td>
+            </tr>
 
-/* 상단 공지 통합 셀 */
-.data-table .top-notice-row td {
-    background: var(--yellow-bg); 
-    color: var(--dark-text); 
-    text-align: left;
-    padding: 1px 4px; 
-    font-size: 8px;
-    font-weight: 700;
-    line-height: 1.2;
-    border-bottom: 2px solid var(--table-border);
-    white-space: normal; 
-}
-.data-table .top-notice-mark {
-    color: var(--red-highlight); 
-    font-weight: 900;
-    margin-right: 2px;
-}
+            <tr class="bottom-data-header">
+                <td class="w-20" contenteditable="true">주문유형</td>
+                <td class="w-20" contenteditable="true">주문상세</td>
+                <td contenteditable="true">투자금액 (원)</td>
+                <td contenteditable="true">원금+수익금액</td>
+                <td contenteditable="true">보장비율</td>
+            </tr>
 
-/* 헤더 행 */
-.data-table .top-data-header td {
-    background: var(--table-header-bg); 
-    color: var(--table-header-text); 
-    font-weight: 700;
-    height: 15px; 
-    width: 20%; 
-}
+            <tr class="bottom-data-row">
+                <td contenteditable="true">A</td>
+                <td contenteditable="true">[2종택1]</td>
+                <td contenteditable="true" class="red-text">1,500,000</td>
+                <td contenteditable="true">1,650,000</td>
+                <td contenteditable="true" class="red-text">0%</td>
+            </tr>
+            <tr class="bottom-data-row">
+                <td contenteditable="true">B</td>
+                <td contenteditable="true">[2종택1]</td>
+                <td contenteditable="true">2,500,000</td>
+                <td contenteditable="true">2,750,000</td>
+                <td contenteditable="true">100%</td>
+            </tr>
+            <tr class="bottom-data-row">
+                <td contenteditable="true">C</td>
+                <td contenteditable="true">[2종택1]</td>
+                <td contenteditable="true">0</td>
+                <td contenteditable="true">0</td>
+                <td contenteditable="true" class="red-text">0%</td>
+            </tr>
+            <tr class="bottom-data-row">
+                <td contenteditable="true">D</td>
+                <td contenteditable="true">[2종택1]</td>
+                <td contenteditable="true">0</td>
+                <td contenteditable="true">0</td>
+                <td contenteditable="true" class="red-text">0%</td>
+            </tr>
 
-/* 데이터 행 */
-.data-table .top-data-row td {
-    height: 15px; 
-}
-.data-table .top-data-row td:nth-child(3),
-.data-table .top-data-row td:nth-child(4) {
-    color: var(--col-num-text-color); 
-    font-weight: 700;
-}
+        </tbody>
+    </table>
+</div>
 
-/* 중간 제목 셀 */
-.data-table .middle-title-row td {
-    background: var(--yellow-bg); 
-    color: var(--dark-text); 
-    font-size: 12px;
-    font-weight: 900;
-    padding: 6px 4px; 
-    border-bottom: 2px solid var(--table-border);
-}
+<div class="resizer-display" id="resizerDisplay"></div>
 
-/* 중간 공지사항 셀 */
-.data-table .middle-notice-row td {
-    background: var(--yellow-bg); 
-    color: var(--dark-text); 
-    text-align: left;
-    padding: 4px 6px; 
-    font-size: 8px;
-    line-height: 1.3; 
-    white-space: normal; 
-    border-bottom: 2px solid var(--table-border);
-}
-
-/* 하단 데이터 헤더 */
-.data-table .bottom-data-header td {
-    background: var(--table-header-bg); 
-    color: var(--table-header-text); 
-    font-weight: 700;
-    font-size: 14px;
-    width: 20%; 
-}
-
-/* 하단 데이터 행 */
-.data-table .bottom-data-row td {
-    font-weight: 700;
-    font-size: 14px;
-}
-.data-table .bottom-data-row .red-text {
-    color: var(--col-num-text-color); 
-}
-
-/* 🚀 [수정됨] 호버 시 배경색: .selected 클래스가 없는 셀에만 적용 */
-.data-table tr:hover td:not([style*="background-color"]):not(.selected){
-    background: #567d58; 
-}
-
-
-/* --- 설정 패널 스타일 --- */
-.setting-panel{
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    width: 250px;
-    padding: 15px;
-    border: 1px solid #333;
-    border-radius: 8px;
-    color: white;
-    z-index: 100; 
-    font-size: 12px;
-}
-.setting-panel h3{
-    margin-top: 10px;
-    margin-bottom: 10px;
-    font-size: 14px;
-    border-bottom: 1px solid #333;
-    padding-bottom: 5px;
-}
-.color-palette {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    padding: 5px 0;
-    border-bottom: 1px solid #333; 
-    margin-bottom: 10px; 
-}
-.color-swatch {
-    width: 20px;
-    height: 20px;
-    border: 1px solid #fff;
-    cursor: pointer;
-    transition: transform 0.1s;
-}
-.color-swatch:hover {
-    transform: scale(1.1);
-}
-.download-button {
-    width: 100%;
-    padding: 10px;
-    margin-top: 15px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.2s;
-}
-.download-button:hover {
-    background-color: #0056b3;
-}
-
-/* --- 열/행 크기 조절 (Resizer) 스타일 --- */
-.data-table td {
-    position: relative;
-}
-
-/* 열 크기 조절 커서 변경 */
-.col-resizer {
-    position: absolute;
-    right: 0;
-    top: 0;
-    height: 100%;
-    width: 5px;
-    cursor: col-resize;
-    z-index: 5;
-}
-
-/* 행 크기 조절 커서 변경 */
-.row-resizer {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 5px;
-    cursor: row-resize;
-    z-index: 5;
-}
+<script src="script.js"></script>
+</body>
+</html>
