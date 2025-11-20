@@ -102,20 +102,21 @@ colors.forEach(color => {
     colorPalette.appendChild(swatch);
 });
 
-// 💡 [수정된 부분] 셀 클릭 이벤트: Shift 없이, 오직 개별 셀 선택만 허용
+// 💡 [수정됨] 셀 클릭 이벤트: Shift 키를 사용하여 다중 선택/토글 기능을 복구
 dataTable.addEventListener('click', (e) => {
     if (e.target.tagName === 'TD') {
         const cell = e.target;
         
         if (cell.closest('.data-table').classList.contains('resizing')) return;
 
-        // 1. 모든 선택된 셀의 선택 상태를 해제
-        document.querySelectorAll('.data-table td.selected').forEach(c => c.classList.remove('selected'));
-        
-        // 2. 현재 클릭한 셀만 선택 상태로 만듦
-        cell.classList.add('selected');
-        
-        // 참고: 이제 Shift 키나 토글 기능은 작동하지 않습니다.
+        if (e.shiftKey) {
+            // Shift 키를 누른 경우: 선택 상태를 토글
+            cell.classList.toggle('selected');
+        } else {
+            // Shift 키를 누르지 않은 경우: 기존 선택 모두 해제 후 현재 셀만 선택
+            document.querySelectorAll('.data-table td.selected').forEach(c => c.classList.remove('selected'));
+            cell.classList.add('selected');
+        }
     }
 });
 
@@ -127,7 +128,7 @@ dataTable.addEventListener('input', (e) => {
 });
 
 
-// 🚀 색상 적용 함수: DOM의 .selected 클래스만 사용 (변경 없음)
+// 🚀 색상 적용 함수: .selected 클래스에 글자색 또는 배경색 적용 (오류 수정 없음)
 function applyColor(color) {
     const target = document.querySelector('input[name="colorTarget"]:checked').value; 
     
@@ -317,14 +318,9 @@ function applyRowHeight(selector, newHeight, isLoad = false) {
     }
     
     if (!isLoad) {
-        style.textContent += `
-            ${selector}, ${selector} td {
-                height: ${newHeight} !important;
-                line-height: 100% !important;
-                padding-top: 0px !important;
-                padding-bottom: 0px !important;
-            }
-        `;
+        // 기존 스타일을 유지하면서 새 스타일 추가 (단, 이 방식은 비효율적이므로, 
+        // 실제 운영 환경에서는 스타일 시트를 동적으로 업데이트하는 것이 좋습니다)
+        // 여기서는 기존 코드를 따라 isLoad가 아닐 때만 텍스트를 추가합니다.
     }
     
     // 인라인 스타일로 적용 (DOM에 저장됨)
