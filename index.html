@@ -9,24 +9,19 @@
     
     <style>
         body {
-            /* 'vip.png' 파일명을 사용하며, 중앙에 고정됩니다. */
             background: url('vip.png') no-repeat center center fixed; 
-            
-            /* 💡 수정 완료: 이미지를 원본 크기(auto)로 표시합니다. */
             background-size: auto; 
-            
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
             color: white;
-            overflow: hidden; /* 스크롤바 제거 */
+            overflow: hidden; 
         }
         .wrap {
-            /* body의 배경을 사용하기 위해 wrap의 배경색을 투명하게 설정하거나, 검은색 투명을 유지합니다. */
-            background-color: rgba(0, 0, 0, 0.5); 
+            /* 💡 수정 완료: 반투명 검은색 배경을 제거하여 body의 배경이 보이도록 합니다. */
+            background-color: transparent; 
         }
         
-        /* 설정 패널의 배경도 투명도를 유지하여 뒷 배경이 비치도록 합니다. */
         .setting-panel {
             background: rgba(0, 0, 0, 0.7); 
             backdrop-filter: blur(5px);
