@@ -15,6 +15,13 @@ const applyFontSizeBtn = document.getElementById('applyFontSizeBtn');
 const fontSizeInput = document.getElementById('fontSizeInput');
 let selectedCells = [];
 
+// 🚀 [새로운 변수] 하단 행 높이 조절을 위한 UI 요소
+const rowHeightInput = document.getElementById('rowHeightInput');
+const applyRowHeightBtn = document.getElementById('applyRowHeightBtn');
+
+// 🚀 [복구된 변수] 크기 표시기 요소
+const resizerDisplay = document.getElementById('resizerDisplay'); 
+
 
 // 팔레트 생성 (색상 스와치 화면에 표시)
 colors.forEach(color => {
@@ -129,9 +136,10 @@ function initializeResizers() {
             colResizer.addEventListener('mousedown', startResize);
         }
 
-        // 행 크기 조절기 (가로선) - 마지막 행 제외
+        // 행 크기 조절기 (가로선)
+        // middle-notice-row는 높이 조절하지 않음
         const tr = td.parentElement;
-        if (tr.nextElementSibling && !tr.classList.contains('middle-title-row')) {
+        if (!tr.classList.contains('middle-notice-row')) {
             if (td.getAttribute('colspan') === null) {
                 let rowResizer = document.createElement('div');
                 rowResizer.className = 'row-resizer';
@@ -156,10 +164,14 @@ function startResize(e) {
         isRowResizer = false;
         startWidth = cell.offsetWidth;
         dataTable.classList.add('resizing');
+        // 🚀 표시기 활성화
+        if (resizerDisplay) resizerDisplay.style.opacity = 1;
     } else if (currentResizer.classList.contains('row-resizer')) {
         isRowResizer = true;
         startHeight = cell.offsetHeight;
         dataTable.classList.add('resizing');
+        // 🚀 표시기 활성화
+        if (resizerDisplay) resizerDisplay.style.opacity = 1;
     }
     
     document.addEventListener('mousemove', handleResize);
@@ -180,16 +192,33 @@ function handleResize(e) {
             cell.style.width = newWidth + 'px';
             cell.style.minWidth = newWidth + 'px';
         }
+        
+        // 🚀 너비 표시 업데이트
+        if (resizerDisplay) {
+            resizerDisplay.textContent = `${Math.round(newWidth)} px (가로)`;
+            resizerDisplay.style.left = (e.clientX + 10) + 'px';
+            resizerDisplay.style.top = (e.clientY + 10) + 'px';
+        }
+
     } else {
         // 행(높이) 조절
         const deltaY = e.clientY - startY;
         const newHeight = startHeight + deltaY;
-        if (newHeight > 20) {
+        
+        // 최소 높이 제한을 20px로 설정했으므로 그 이상일 때만 적용
+        if (newHeight > 20) { 
             const row = cell.parentElement;
             row.style.height = newHeight + 'px'; 
             row.querySelectorAll('td').forEach(td => {
                 td.style.height = newHeight + 'px';
             });
+        }
+        
+        // 🚀 높이 표시 업데이트
+        if (resizerDisplay) {
+            resizerDisplay.textContent = `${Math.round(newHeight)} px (세로)`;
+            resizerDisplay.style.left = (e.clientX + 10) + 'px';
+            resizerDisplay.style.top = (e.clientY + 10) + 'px';
         }
     }
 }
@@ -198,14 +227,81 @@ function handleResize(e) {
 function stopResize() {
     currentResizer = null;
     dataTable.classList.remove('resizing');
+    
+    // 🚀 표시기 비활성화
+    if (resizerDisplay) resizerDisplay.style.opacity = 0; 
+    
     document.removeEventListener('mousemove', handleResize);
     document.removeEventListener('mouseup', stopResize);
+}
+
+
+// --- 4. 🖱️ 왼쪽 메뉴 항목 색상 토글 기능 추가 (복구) ---
+
+function initializeLeftMenu() {
+    const leftMenuItems = document.querySelectorAll('.left-item');
+
+    leftMenuItems.forEach(item => {
+        item.addEventListener('click', function() {
+            // 1. 모든 항목의 'active' 클래스를 제거합니다.
+            leftMenuItems.forEach(i => i.classList.remove('active'));
+            
+            // 2. 현재 클릭된 항목에만 'active' 클래스를 추가합니다.
+            this.classList.add('active');
+        });
+    });
+}
+
+
+// --- 5. 📏 하단 행 높이 조절 기능 추가 (새로 추가) ---
+
+function initializeRowHeightControl() {
+    if (!applyRowHeightBtn || !rowHeightInput) return; // UI 요소가 없으면 실행 안 함
+    
+    applyRowHeightBtn.addEventListener('click', () => {
+        const newHeight = rowHeightInput.value + 'px';
+        
+        // 1. data-table 내부의 모든 하단 데이터 행/헤더에 인라인 스타일 적용
+        document.querySelectorAll('.bottom-data-header, .bottom-data-row').forEach(row => {
+            row.style.height = newHeight;
+        });
+
+        // 2. data-table 내부의 모든 셀에 높이 및 관련 스타일 적용
+        document.querySelectorAll('.bottom-data-header td, .bottom-data-row td').forEach(cell => {
+            cell.style.height = newHeight;
+            cell.style.lineHeight = '100%'; // 중앙 정렬 보조
+        });
+        
+        // 3. index.html의 <style>에 있는 강제 축소 규칙을 덮어쓰기 위해
+        const styleId = 'dynamic-row-height';
+        let style = document.getElementById(styleId);
+        if (!style) {
+            style = document.createElement('style');
+            style.id = styleId;
+            document.head.appendChild(style);
+        }
+        
+        // 강제 축소 규칙을 덮어쓰는 CSS를 만듭니다.
+        style.textContent = `
+            .bottom-data-header td, .bottom-data-row td {
+                height: ${newHeight} !important;
+                line-height: 100% !important;
+                padding-top: 0px !important;
+                padding-bottom: 0px !important;
+            }
+            .bottom-data-header, .bottom-data-row {
+                height: ${newHeight} !important;
+            }
+        `;
+    });
 }
 
 
 // 페이지 로드 시 기능 초기화
 document.addEventListener('DOMContentLoaded', () => {
     initializeResizers(); 
+    initializeLeftMenu(); // 🚀 왼쪽 메뉴 기능 초기화
+    initializeRowHeightControl(); // 🚀 행 높이 조절 기능 초기화
     
     // 다운로드 버튼에 이벤트 핸들러 할당
     document.querySelector('.download-button').onclick = () => downloadImage('capture-area', 'noblesse_data_capture.png');
