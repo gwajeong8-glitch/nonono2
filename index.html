@@ -2,20 +2,19 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>실시간 데이터 현황 - 노블레스 통합 매니지먼트</title>
+    <title>노블레스 데이터 현황 (편집 기능 최종)</title>
     <link rel="stylesheet" href="style.css"> 
     
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </head>
 <body>
 
-<div class="setting-panel">
-    
-    <button id="toggleEditMode" class="mode-button active" onclick="toggleEditMode()">
-        🎨 현재 셀 **색상 편집** 모드 (클릭하여 셀 활성화)
+<div class="setting-panel" id="settingPanel">
+    <button class="mode-button active">
+        🎨 현재 셀 **색상 편집** 모드 (Shift+클릭 다중 선택)
     </button>
-    <div id="selectionModeInfo" style="color: #ffdd66; margin-top: 5px; margin-bottom: 10px;">
-        **클릭** 후 색상 설정으로 변경하세요.
+    <div style="color: #ffdd66; margin-top: 5px; margin-bottom: 10px;">
+        **Shift+클릭** 후 색상/크기 설정으로 변경하세요.
     </div>
 
     <div class="color-target-control">
@@ -25,26 +24,38 @@
     
     <div class="color-control">
         <h3>🎨 색상 팔레트 선택 (40색)</h3>
-        
-        <div class="color-palette-container">
-            <div class="color-palette">
+        <div class="color-palette">
             </div>
-        </div>
     </div>
     
-    <button class="download-button" onclick="downloadImage()">
+    <div style="margin-top: 10px; padding-top: 5px; border-top: 1px solid #333;">
+        <label for="fontSizeInput">글꼴 크기 (px): </label>
+        <input type="number" id="fontSizeInput" min="8" max="48" value="14" style="width: 50px; margin-left: 5px; color: black;">
+        <button id="applyFontSizeBtn" style="margin-left: 5px; padding: 3px 8px; background: #555; color: white; border: none; border-radius: 3px; cursor: pointer;">적용</button>
+    </div>
+
+    <div class="row-control" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #333; display: flex; justify-content: space-between;">
+        <button id="addRowBtn" class="control-button" style="background-color: #008000; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px;">
+            ➕ 행 추가
+        </button>
+        <button id="deleteRowBtn" class="control-button" style="background-color: #8B0000; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px;">
+            ➖ 마지막 행 삭제
+        </button>
+    </div>
+
+    <button class="download-button" onclick="downloadImage('capture-area', 'noblesse_data_capture.png')">
         🖼️ 테이블 영역 이미지 다운로드 (PNG)
     </button>
 </div>
 
 <div class="wrap" id="capture-area"> 
 
-    <div class="top-menu">
+    <div class="top-sub-menu">
         <div class="menu">블레스 전국 프레스티지 서비스</div>
         <div class="menu">VIP 회원 전용 통합 매니지먼트</div>
         <div class="menu">노블레스 회원 전용룸</div>
     </div>
-
+    
     <div class="left-menu">
         <div class="left-item active">메인 화면</div>
         <div class="left-item">[매칭/고객 상태]</div>
@@ -74,11 +85,11 @@
             </tr>
             
             <tr class="top-data-header">
-                <td>회원ID</td>
-                <td>주문상태</td>
-                <td>인증상태</td> 
-                <td>활성화 코드</td> 
-                <td>승인된 암호 코드</td> 
+                <td contenteditable="true">회원ID</td>
+                <td contenteditable="true">주문상태</td>
+                <td contenteditable="true">인증상태</td> 
+                <td contenteditable="true">활성화 코드</td> 
+                <td contenteditable="true">승인된 암호 코드</td> 
             </tr>
             
             <tr class="top-data-row">
@@ -127,11 +138,11 @@
             </tr>
 
             <tr class="bottom-data-header">
-                <td class="w-20">주문유형</td>
-                <td class="w-20">주문상세</td>
-                <td class="w-20">투자금액 (원)</td>
-                <td class="w-20">원금+수익금액</td>
-                <td class="w-20">보장비율</td>
+                <td class="w-20" contenteditable="true">주문유형</td>
+                <td class="w-20" contenteditable="true">주문상세</td>
+                <td class="w-20" contenteditable="true">투자금액 (원)</td>
+                <td class="w-20" contenteditable="true">원금+수익금액</td>
+                <td class="w-20" contenteditable="true">보장비율</td>
             </tr>
 
             <tr class="bottom-data-row">
@@ -151,7 +162,6 @@
 
         </tbody>
     </table>
-
 </div>
 
 <script src="script.js"></script>
