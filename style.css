@@ -26,7 +26,7 @@ body{
 .wrap{
     width:1024px;
     height:490px;
-    margin:20px auto 0 auto; /* 상단 여백 확보 */
+    margin:20px auto 0 auto; 
     position:relative;
     background-color: #000;
     overflow: hidden;
@@ -91,7 +91,7 @@ body{
     border-bottom:1px solid var(--table-border);
     border-right:1px solid var(--table-border);
     white-space: nowrap;
-    outline: none; /* contenteditable 시 생기는 기본 아웃라인 제거 */
+    outline: none; 
 }
 
 /* 마지막 셀의 오른쪽 경계선 제거 */
@@ -106,7 +106,7 @@ body{
     cursor: pointer;
 }
 
-/* 1. 상단 공지 통합 셀 (.top-notice-row) */
+/* 상단 공지 통합 셀 */
 .data-table .top-notice-row td {
     background: var(--yellow-bg); 
     color: var(--dark-text); 
@@ -116,7 +116,7 @@ body{
     font-weight: 700;
     line-height: 1.2;
     border-bottom: 2px solid var(--table-border);
-    white-space: normal; /* 줄바꿈 허용 */
+    white-space: normal; 
 }
 .data-table .top-notice-mark {
     color: var(--red-highlight); 
@@ -124,27 +124,26 @@ body{
     margin-right: 2px;
 }
 
-/* 2. 상단 데이터 헤더 (.top-data-header) */
+/* 헤더 행 */
 .data-table .top-data-header td {
     background: var(--table-header-bg); 
     color: var(--table-header-text); 
     font-weight: 700;
     height: 15px; 
-    width: 20%; /* 초기 비율 */
+    width: 20%; 
 }
 
-/* 3. 상단 데이터 행 (.top-data-row) */
+/* 데이터 행 */
 .data-table .top-data-row td {
     height: 15px; 
 }
-/* 특정 셀 (코드)의 글자색을 강조색 변수로 변경 */
 .data-table .top-data-row td:nth-child(3),
 .data-table .top-data-row td:nth-child(4) {
     color: var(--col-num-text-color); 
     font-weight: 700;
 }
 
-/* 4. 중간 제목 셀 (.middle-title-row) */
+/* 중간 제목 셀 */
 .data-table .middle-title-row td {
     background: var(--yellow-bg); 
     color: var(--dark-text); 
@@ -154,7 +153,7 @@ body{
     border-bottom: 2px solid var(--table-border);
 }
 
-/* 5. 중간 공지사항 셀 (.middle-notice-row) */
+/* 중간 공지사항 셀 */
 .data-table .middle-notice-row td {
     background: var(--yellow-bg); 
     color: var(--dark-text); 
@@ -166,7 +165,7 @@ body{
     border-bottom: 2px solid var(--table-border);
 }
 
-/* 6. 하단 데이터 헤더 (.bottom-data-header) */
+/* 하단 데이터 헤더 */
 .data-table .bottom-data-header td {
     background: var(--table-header-bg); 
     color: var(--table-header-text); 
@@ -177,7 +176,7 @@ body{
     width: 20%; 
 }
 
-/* 7. 하단 데이터 행 (.bottom-data-row) */
+/* 하단 데이터 행 */
 .data-table .bottom-data-row td {
     font-weight: 700;
     height: 32px; 
@@ -188,7 +187,7 @@ body{
     color: var(--col-num-text-color); 
 }
 
-/* 호버 시 글자 잘 보이도록 배경색 수정 */
+/* 호버 시 배경색 수정 */
 .data-table tr:hover td:not([style*="background-color"]){
     background: #567d58; 
 }
@@ -250,13 +249,17 @@ body{
     background-color: #0056b3;
 }
 
-/* --- 🌟 열 크기 조절 (Resizer) 스타일 🌟 --- */
-/* 테이블 셀에 마우스를 올렸을 때 커서 변경 */
-.data-table th, .data-table td {
+/* --- 🌟 열/행 크기 조절 (Resizer) 스타일 🌟 --- */
+.data-table td {
     position: relative;
 }
 
 /* 열 크기 조절 커서 변경 */
 .resizable-col {
     cursor: col-resize; 
+}
+
+/* 행 크기 조절 커서 변경 */
+.resizable-row {
+    cursor: row-resize !important; 
 }
