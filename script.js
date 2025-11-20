@@ -187,4 +187,15 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         colorPaletteElement.appendChild(swatch);
     });
+    
+    // ----------------------------------------------------
+    // 4. 기타 UI 로직: 왼쪽 메뉴 active 토글 (이 부분이 정상 작동해야 합니다.)
+    // ----------------------------------------------------
+    const leftItems = document.querySelectorAll(".left-item");
+    leftItems.forEach(item => {
+        item.addEventListener("click", () => {
+            document.querySelector(".left-item.active")?.classList.remove("active");
+            item.classList.add("active");
+        });
+    });
 });
