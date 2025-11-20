@@ -32,13 +32,12 @@ function downloadImage() {
         button.textContent = originalText;
         button.disabled = false;
         
-        // alert('테이블 영역 이미지가 PNG 파일로 다운로드되었습니다.'); // 경고창은 주석 처리
     }).catch(error => {
         // 에러 발생 시 처리
         console.error('이미지 생성 중 오류 발생:', error);
         button.textContent = '❌ 오류 발생 (콘솔 확인)';
         button.disabled = false;
-        alert('이미지 생성에 실패했습니다. (특히 배경 이미지 vip.png가 로컬 파일인 경우 보안 문제로 실패할 수 있습니다.)');
+        alert('이미지 생성에 실패했습니다. (배경 이미지가 로컬 파일인 경우 보안 문제로 실패할 수 있습니다.)');
     });
 }
 
