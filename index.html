@@ -9,8 +9,8 @@
     
     <style>
         body {
-            /* 이미지를 중앙에 배치하고 100px 위로 끌어올립니다. */
-            background: url('vip.png') no-repeat center 0px fixed; 
+            /* 🚀 배경 이미지 위치 조정 (200px 아래로) */
+            background: url('vip.png') no-repeat center 200px fixed; 
             background-size: auto; 
             margin: 0;
             padding: 0;
@@ -19,7 +19,6 @@
             overflow: hidden; 
         }
         .wrap {
-            /* 회색 배경 제거 완료 */
             background-color: transparent; 
         }
         
@@ -28,19 +27,14 @@
             backdrop-filter: blur(5px);
         }
         
-        /* 🚀 높이 1/2 강제 축소 규칙: 주문 유형 행의 높이와 패딩을 강제 최소화합니다. */
+        /* 💡 높이 강제 축소 규칙: 주문 유형 행의 높이와 패딩, 글꼴을 강제 최소화합니다. */
         .bottom-data-header td, .bottom-data-row td {
-            /* 높이를 10px로 강제 지정 */
             height: 10px !important; 
-            /* 상하 패딩 제거 */
             padding-top: 0px !important;
             padding-bottom: 0px !important;
-            /* 글꼴 크기를 작게 */
             font-size: 8px !important; 
-            /* 줄 높이도 최소화 */
             line-height: 1 !important; 
         }
-        /* 행 자체의 높이도 강제 지정 */
         .bottom-data-header, .bottom-data-row {
             height: 10px !important;
         }
@@ -50,12 +44,27 @@
 
 <div class="setting-panel" id="settingPanel">
     
+    <div style="color: #ffdd66; margin-top: 5px; margin-bottom: 10px;">
+        **셀 선택** 후 색상/크기 설정으로 변경하세요.
+    </div>
+
+    <div class="color-target-control">
+        <label><input type="radio" name="colorTarget" value="text" checked> 글자색 적용</label>
+        <label><input type="radio" name="colorTarget" value="background"> 배경색 적용</label>
+    </div>
+    
     <div class="color-control">
         <h3>🎨 색상 팔레트 선택 (40색)</h3>
         <div class="color-palette">
             </div>
     </div>
     
+    <div style="margin-top: 10px; padding-top: 5px; border-top: 1px solid #333;">
+        <label for="fontSizeInput">글꼴 크기 (px): </label>
+        <input type="number" id="fontSizeInput" min="8" max="48" value="14" style="width: 50px; margin-left: 5px; color: black;">
+        <button id="applyFontSizeBtn" style="margin-left: 5px; padding: 3px 8px; background: #555; color: white; border: none; border-radius: 3px; cursor: pointer;">적용</button>
+    </div>
+
     <button class="download-button" onclick="downloadImage('capture-area', 'noblesse_data_capture.png')">
         🖼️ 테이블 영역 이미지 다운로드 (PNG)
     </button>
