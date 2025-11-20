@@ -184,7 +184,7 @@ function handleResize(e) {
         // 행(높이) 조절
         const deltaY = e.clientY - startY;
         const newHeight = startHeight + deltaY;
-        if (newHeight > 10) {
+        if (newHeight > 20) {
             const row = cell.parentElement;
             row.style.height = newHeight + 'px'; 
             row.querySelectorAll('td').forEach(td => {
