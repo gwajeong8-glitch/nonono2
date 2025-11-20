@@ -110,28 +110,9 @@ let startWidth = 0;
 let startHeight = 0;
 let isRowResizer = false;
 
-// 초기화: 각 셀에 리사이저 추가 (맨 마지막 행도 포함하도록 수정)
-function initializeResizers() {
-    document.querySelectorAll('.data-table tr:not(.middle-notice-row, .top-notice-row) td').forEach(td => {
-        
-        // 열 크기 조절기 (세로선) - 마지막 열 제외
-        if (td.nextElementSibling) {
-            let colResizer = document.createElement('div');
-            colResizer.className = 'col-resizer';
-            td.appendChild(colResizer);
-            colResizer.addEventListener('mousedown', startResize);
-        }
+// 🚀 새 전역 변수 추가
+const resizerDisplay = document.getElementById('resizerDisplay'); 
 
-        // 🚀 행 크기 조절기 (가로선) - tr.nextElementSibling 체크 제거하여 마지막 행 포함
-        // 병합 셀이 없는 경우에만 resizer 추가
-        if (td.getAttribute('colspan') === null) {
-            let rowResizer = document.createElement('div');
-            rowResizer.className = 'row-resizer';
-            td.appendChild(rowResizer);
-            rowResizer.addEventListener('mousedown', startResize);
-        }
-    });
-}
 
 // 리사이즈 시작
 function startResize(e) {
@@ -147,10 +128,14 @@ function startResize(e) {
         isRowResizer = false;
         startWidth = cell.offsetWidth;
         dataTable.classList.add('resizing');
+        // 🚀 표시기 활성화
+        resizerDisplay.style.opacity = 1;
     } else if (currentResizer.classList.contains('row-resizer')) {
         isRowResizer = true;
         startHeight = cell.offsetHeight;
         dataTable.classList.add('resizing');
+        // 🚀 표시기 활성화
+        resizerDisplay.style.opacity = 1;
     }
     
     document.addEventListener('mousemove', handleResize);
@@ -166,22 +151,31 @@ function handleResize(e) {
     if (!isRowResizer) {
         // 열(너비) 조절
         const deltaX = e.clientX - startX;
-        const newWidth = startWidth + deltaX;
-        if (newWidth > 30) {
-            cell.style.width = newWidth + 'px';
-            cell.style.minWidth = newWidth + 'px';
-        }
+        const newWidth = Math.max(30, startWidth + deltaX); // 최소 너비 30px
+        
+        cell.style.width = newWidth + 'px';
+        cell.style.minWidth = newWidth + 'px';
+
+        // 🚀 너비 표시 업데이트
+        resizerDisplay.textContent = `${Math.round(newWidth)} px (가로)`;
+        resizerDisplay.style.left = (e.clientX + 10) + 'px';
+        resizerDisplay.style.top = (e.clientY + 10) + 'px';
+
     } else {
         // 행(높이) 조절
         const deltaY = e.clientY - startY;
-        const newHeight = startHeight + deltaY;
-        if (newHeight > 10) {
-            const row = cell.parentElement;
-            row.style.height = newHeight + 'px'; 
-            row.querySelectorAll('td').forEach(td => {
-                td.style.height = newHeight + 'px';
-            });
-        }
+        const newHeight = Math.max(10, startHeight + deltaY); // 최소 높이 10px
+        
+        const row = cell.parentElement;
+        row.style.height = newHeight + 'px'; 
+        row.querySelectorAll('td').forEach(td => {
+            td.style.height = newHeight + 'px';
+        });
+
+        // 🚀 높이 표시 업데이트
+        resizerDisplay.textContent = `${Math.round(newHeight)} px (세로)`;
+        resizerDisplay.style.left = (e.clientX + 10) + 'px';
+        resizerDisplay.style.top = (e.clientY + 10) + 'px';
     }
 }
 
@@ -189,10 +183,16 @@ function handleResize(e) {
 function stopResize() {
     currentResizer = null;
     dataTable.classList.remove('resizing');
+    
+    // 🚀 표시기 비활성화
+    resizerDisplay.style.opacity = 0; 
+    
     document.removeEventListener('mousemove', handleResize);
     document.removeEventListener('mouseup', stopResize);
 }
 
+
+// ... (initializeResizers 함수는 그대로 유지) ...
 
 // 페이지 로드 시 기능 초기화
 document.addEventListener('DOMContentLoaded', () => {
