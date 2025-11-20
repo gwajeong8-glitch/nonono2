@@ -27,6 +27,23 @@
             background: rgba(0, 0, 0, 0.7); 
             backdrop-filter: blur(5px);
         }
+        
+        /* 🚀 높이 1/2 강제 축소 규칙: 주문 유형 행의 높이와 패딩을 강제 최소화합니다. */
+        .bottom-data-header td, .bottom-data-row td {
+            /* 높이를 10px로 강제 지정 */
+            height: 10px !important; 
+            /* 상하 패딩 제거 */
+            padding-top: 0px !important;
+            padding-bottom: 0px !important;
+            /* 글꼴 크기를 작게 */
+            font-size: 8px !important; 
+            /* 줄 높이도 최소화 */
+            line-height: 1 !important; 
+        }
+        /* 행 자체의 높이도 강제 지정 */
+        .bottom-data-header, .bottom-data-row {
+            height: 10px !important;
+        }
     </style>
 </head>
 <body>
@@ -150,7 +167,7 @@
                 </td>
             </tr>
 
-            <tr class="bottom-data-header" style="height: 20px;">
+            <tr class="bottom-data-header">
                 <td class="w-20" contenteditable="true">주문유형</td>
                 <td class="w-20" contenteditable="true">주문상세</td>
                 <td contenteditable="true">투자금액 (원)</td>
@@ -158,28 +175,28 @@
                 <td contenteditable="true">보장비율</td>
             </tr>
 
-            <tr class="bottom-data-row" style="height: 20px;">
+            <tr class="bottom-data-row">
                 <td contenteditable="true">A</td>
                 <td contenteditable="true">[2종택1]</td>
                 <td contenteditable="true" class="red-text">1,500,000</td>
                 <td contenteditable="true">1,650,000</td>
                 <td contenteditable="true" class="red-text">0%</td>
             </tr>
-            <tr class="bottom-data-row" style="height: 20px;">
+            <tr class="bottom-data-row">
                 <td contenteditable="true">B</td>
                 <td contenteditable="true">[2종택1]</td>
                 <td contenteditable="true">2,500,000</td>
                 <td contenteditable="true">2,750,000</td>
                 <td contenteditable="true" class="red-text">100%</td>
             </tr>
-            <tr class="bottom-data-row" style="height: 20px;">
+            <tr class="bottom-data-row">
                 <td contenteditable="true">C</td>
                 <td contenteditable="true">[2종택1]</td>
                 <td contenteditable="true">0</td>
                 <td contenteditable="true">0</td>
                 <td contenteditable="true" class="red-text">0%</td>
             </tr>
-            <tr class="bottom-data-row" style="height: 20px;">
+            <tr class="bottom-data-row">
                 <td contenteditable="true">D</td>
                 <td contenteditable="true">[2종택1]</td>
                 <td contenteditable="true">0</td>
