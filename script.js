@@ -1,4 +1,4 @@
-// --- 1. 색상 팔레트 및 편집 기능 변수 설정 (이전과 동일) ---
+// --- 1. 색상 팔레트 및 편집 기능 변수 설정 ---
 
 const colors = [
     '#FF0000', '#FF4500', '#FFA500', '#FFFF00', '#ADFF2F', '#00FF00', '#3CB371', '#00FFFF',
@@ -16,28 +16,32 @@ const fontSizeInput = document.getElementById('fontSizeInput');
 let selectedCells = [];
 
 
-// 팔레트 생성 
+// 팔레트 생성 (색상 스와치 화면에 표시)
 colors.forEach(color => {
     const swatch = document.createElement('div');
     swatch.className = 'color-swatch';
     swatch.style.backgroundColor = color;
     swatch.dataset.color = color;
+    // 클릭 시 색상 적용 함수 호출
     swatch.addEventListener('click', () => applyColor(color)); 
     colorPalette.appendChild(swatch);
 });
 
-// 셀 클릭 이벤트 
+// 셀 클릭 이벤트 (Shift를 누르면 다중 선택)
 dataTable.addEventListener('click', (e) => {
     if (e.target.tagName === 'TD') {
         const cell = e.target;
         
+        // 크기 조절 중에는 셀 선택 방지
         if (cell.closest('.data-table').classList.contains('resizing')) return;
 
+        // Shift 키가 눌려있지 않으면 선택 초기화
         if (!e.shiftKey) {
             selectedCells.forEach(c => c.classList.remove('selected'));
             selectedCells = [];
         }
 
+        // 선택/선택 해제 토글
         if (cell.classList.contains('selected')) {
             cell.classList.remove('selected');
             selectedCells = selectedCells.filter(c => c !== cell);
@@ -49,31 +53,34 @@ dataTable.addEventListener('click', (e) => {
 });
 
 
-// 색상 적용 함수 
+// 🚀 색상 적용 함수 (글자색/배경색 선택 기능을 사용자가 선택한 대로만 적용)
 function applyColor(color) {
+    // 'text' 또는 'background' 중 사용자가 라디오 버튼으로 선택한 값
     const target = document.querySelector('input[name="colorTarget"]:checked').value; 
     
     selectedCells.forEach(cell => {
         if (target === 'background') {
+            // 배경색만 변경
             cell.style.backgroundColor = color;
         } else {
+            // 글자색만 변경
             cell.style.color = color;
         }
     });
 }
 
 
-// 글꼴 크기 적용 함수 
+// 📏 글꼴 크기 적용 함수
 applyFontSizeBtn.addEventListener('click', () => {
     const newSize = fontSizeInput.value + 'px';
     selectedCells.forEach(cell => {
         cell.style.fontSize = newSize;
-        cell.style.lineHeight = '1.2';
+        cell.style.lineHeight = '1.2'; // 크기 변경 시 줄 높이 조정
     });
 });
 
 
-// --- 2. 🖼️ 이미지 다운로드 기능 (이전과 동일) ---
+// --- 2. 🖼️ 이미지 다운로드 기능 ---
 
 function downloadImage(elementId, filename) {
     const element = document.getElementById(elementId);
@@ -110,9 +117,30 @@ let startWidth = 0;
 let startHeight = 0;
 let isRowResizer = false;
 
-// 🚀 새 전역 변수 추가
-const resizerDisplay = document.getElementById('resizerDisplay'); 
+// 초기화: 각 셀에 리사이저 추가
+function initializeResizers() {
+    // 병합된 셀이 아닌 행/셀에만 리사이저 추가
+    document.querySelectorAll('.data-table tr:not(.middle-notice-row, .top-notice-row) td').forEach(td => {
+        // 열 크기 조절기 (세로선) - 마지막 열 제외
+        if (td.nextElementSibling) {
+            let colResizer = document.createElement('div');
+            colResizer.className = 'col-resizer';
+            td.appendChild(colResizer);
+            colResizer.addEventListener('mousedown', startResize);
+        }
 
+        // 행 크기 조절기 (가로선) - 마지막 행 제외
+        const tr = td.parentElement;
+        if (tr.nextElementSibling && !tr.classList.contains('middle-title-row')) {
+            if (td.getAttribute('colspan') === null) {
+                let rowResizer = document.createElement('div');
+                rowResizer.className = 'row-resizer';
+                td.appendChild(rowResizer);
+                rowResizer.addEventListener('mousedown', startResize);
+            }
+        }
+    });
+}
 
 // 리사이즈 시작
 function startResize(e) {
@@ -128,14 +156,10 @@ function startResize(e) {
         isRowResizer = false;
         startWidth = cell.offsetWidth;
         dataTable.classList.add('resizing');
-        // 🚀 표시기 활성화
-        resizerDisplay.style.opacity = 1;
     } else if (currentResizer.classList.contains('row-resizer')) {
         isRowResizer = true;
         startHeight = cell.offsetHeight;
         dataTable.classList.add('resizing');
-        // 🚀 표시기 활성화
-        resizerDisplay.style.opacity = 1;
     }
     
     document.addEventListener('mousemove', handleResize);
@@ -151,31 +175,22 @@ function handleResize(e) {
     if (!isRowResizer) {
         // 열(너비) 조절
         const deltaX = e.clientX - startX;
-        const newWidth = Math.max(30, startWidth + deltaX); // 최소 너비 30px
-        
-        cell.style.width = newWidth + 'px';
-        cell.style.minWidth = newWidth + 'px';
-
-        // 🚀 너비 표시 업데이트
-        resizerDisplay.textContent = `${Math.round(newWidth)} px (가로)`;
-        resizerDisplay.style.left = (e.clientX + 10) + 'px';
-        resizerDisplay.style.top = (e.clientY + 10) + 'px';
-
+        const newWidth = startWidth + deltaX;
+        if (newWidth > 30) {
+            cell.style.width = newWidth + 'px';
+            cell.style.minWidth = newWidth + 'px';
+        }
     } else {
         // 행(높이) 조절
         const deltaY = e.clientY - startY;
-        const newHeight = Math.max(10, startHeight + deltaY); // 최소 높이 10px
-        
-        const row = cell.parentElement;
-        row.style.height = newHeight + 'px'; 
-        row.querySelectorAll('td').forEach(td => {
-            td.style.height = newHeight + 'px';
-        });
-
-        // 🚀 높이 표시 업데이트
-        resizerDisplay.textContent = `${Math.round(newHeight)} px (세로)`;
-        resizerDisplay.style.left = (e.clientX + 10) + 'px';
-        resizerDisplay.style.top = (e.clientY + 10) + 'px';
+        const newHeight = startHeight + deltaY;
+        if (newHeight > 10) {
+            const row = cell.parentElement;
+            row.style.height = newHeight + 'px'; 
+            row.querySelectorAll('td').forEach(td => {
+                td.style.height = newHeight + 'px';
+            });
+        }
     }
 }
 
@@ -183,38 +198,15 @@ function handleResize(e) {
 function stopResize() {
     currentResizer = null;
     dataTable.classList.remove('resizing');
-    
-    // 🚀 표시기 비활성화
-    resizerDisplay.style.opacity = 0; 
-    
     document.removeEventListener('mousemove', handleResize);
     document.removeEventListener('mouseup', stopResize);
 }
 
 
-// ... (initializeResizers 함수는 그대로 유지) ...
-
 // 페이지 로드 시 기능 초기화
 document.addEventListener('DOMContentLoaded', () => {
     initializeResizers(); 
     
+    // 다운로드 버튼에 이벤트 핸들러 할당
     document.querySelector('.download-button').onclick = () => downloadImage('capture-area', 'noblesse_data_capture.png');
-});
-
-// --- 4. 🖱️ 왼쪽 메뉴 항목 색상 토글 기능 추가 ---
-
-document.addEventListener('DOMContentLoaded', () => {
-    // ... (기존 initializeResizers 호출 등은 유지) ... 
-    
-    const leftMenuItems = document.querySelectorAll('.left-item');
-
-    leftMenuItems.forEach(item => {
-        item.addEventListener('click', function() {
-            // 1. 모든 항목의 'active' 클래스를 제거합니다.
-            leftMenuItems.forEach(i => i.classList.remove('active'));
-            
-            // 2. 현재 클릭된 항목에만 'active' 클래스를 추가합니다.
-            this.classList.add('active');
-        });
-    });
 });
