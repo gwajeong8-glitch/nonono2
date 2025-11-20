@@ -13,7 +13,6 @@ const colorPalette = document.querySelector('.color-palette');
 const dataTable = document.querySelector('.data-table');
 const applyFontSizeBtn = document.getElementById('applyFontSizeBtn');
 const fontSizeInput = document.getElementById('fontSizeInput');
-// let selectedCells = []; // 💡 [수정] 전역 변수 제거 (DOM 기반으로 변경)
 
 // 📐 그룹별 높이 입력 필드 변수
 const topRowHeightInput = document.getElementById('topRowHeightInput');
@@ -103,23 +102,20 @@ colors.forEach(color => {
     colorPalette.appendChild(swatch);
 });
 
-// 💡 [수정] 셀 클릭 이벤트 (Shift를 누르면 다중 선택) - DOM 기반으로 변경
+// 💡 [수정된 부분] 셀 클릭 이벤트: Shift 없이, 오직 개별 셀 선택만 허용
 dataTable.addEventListener('click', (e) => {
     if (e.target.tagName === 'TD') {
         const cell = e.target;
         
         if (cell.closest('.data-table').classList.contains('resizing')) return;
 
-        if (!e.shiftKey) {
-            // Shift가 눌리지 않았으면, 모든 선택을 해제하고 현재 셀만 선택
-            document.querySelectorAll('.data-table td.selected').forEach(c => c.classList.remove('selected'));
-            cell.classList.add('selected');
-        } else {
-            // Shift가 눌렸으면, 토글
-            cell.classList.toggle('selected');
-        }
+        // 1. 모든 선택된 셀의 선택 상태를 해제
+        document.querySelectorAll('.data-table td.selected').forEach(c => c.classList.remove('selected'));
         
-        // DOM 기반으로 selectedCells를 관리하므로 전역 변수 업데이트 불필요
+        // 2. 현재 클릭한 셀만 선택 상태로 만듦
+        cell.classList.add('selected');
+        
+        // 참고: 이제 Shift 키나 토글 기능은 작동하지 않습니다.
     }
 });
 
@@ -131,29 +127,26 @@ dataTable.addEventListener('input', (e) => {
 });
 
 
-// 🚀 [수정] 색상 적용 함수: DOM의 .selected 클래스만 사용
+// 🚀 색상 적용 함수: DOM의 .selected 클래스만 사용 (변경 없음)
 function applyColor(color) {
     const target = document.querySelector('input[name="colorTarget"]:checked').value; 
     
-    // 💡 [핵심 수정] DOM에서 '.selected' 클래스를 가진 모든 TD를 다시 조회
+    // DOM에서 '.selected' 클래스를 가진 모든 TD를 다시 조회
     const cellsToApply = document.querySelectorAll('.data-table td.selected');
 
     cellsToApply.forEach(cell => {
         if (target === 'background') {
             cell.style.backgroundColor = color;
-            // 배경색 적용 시 글자색은 제거하지 않고 유지
         } else { // target === 'text'
             cell.style.color = color;
-            // 글자색 적용 시 배경색은 제거하지 않고 유지
         }
     });
 }
 
 
-// 📏 글꼴 크기 적용 함수
+// 📏 글꼴 크기 적용 함수 (변경 없음)
 applyFontSizeBtn.addEventListener('click', () => {
     const newSize = fontSizeInput.value + 'px';
-    // 💡 [수정] DOM에서 '.selected' 클래스를 가진 모든 TD를 다시 조회
     document.querySelectorAll('.data-table td.selected').forEach(cell => {
         cell.style.fontSize = newSize;
         cell.style.lineHeight = '1.2'; 
