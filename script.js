@@ -15,41 +15,56 @@ const applyFontSizeBtn = document.getElementById('applyFontSizeBtn');
 const fontSizeInput = document.getElementById('fontSizeInput');
 let selectedCells = [];
 
-const rowHeightInput = document.getElementById('rowHeightInput');
-const applyRowHeightBtn = document.getElementById('applyRowHeightBtn');
+// 📐 [수정된 변수] 그룹별 높이 입력 필드 변수
+const topRowHeightInput = document.getElementById('topRowHeightInput');
+const middleRowHeightInput = document.getElementById('middleRowHeightInput');
+const bottomRowHeightInput = document.getElementById('bottomRowHeightInput');
+// 📐 [수정된 변수] 그룹별 적용 버튼 변수
+const applyTopRowHeightBtn = document.getElementById('applyTopRowHeightBtn');
+const applyMiddleRowHeightBtn = document.getElementById('applyMiddleRowHeightBtn');
+const applyBottomRowHeightBtn = document.getElementById('applyBottomRowHeightBtn');
+
 
 const resizerDisplay = document.getElementById('resizerDisplay'); 
 
 
-// 🚀 [신규 기능] LocalStorage에 테이블 내용을 저장하는 함수
+// 🚀 LocalStorage에 테이블 내용을 저장하는 함수
 function saveSettings() {
-    // 캡처 영역(.wrap)의 전체 HTML 내용을 저장하여 색상, 크기, 내용, 높이 등 모든 변경 사항을 보존
     const captureArea = document.getElementById('capture-area');
     if (captureArea) {
         localStorage.setItem('noblesseTableState', captureArea.innerHTML);
         
-        // 추가: 행 높이 입력값도 저장하여 로드 시 UI에 표시
-        if (rowHeightInput) {
-             localStorage.setItem('rowHeightInputValue', rowHeightInput.value);
-        }
+        // 📐 [수정된 저장 로직] 세 가지 높이 입력값 모두 저장
+        if (topRowHeightInput) localStorage.setItem('topRowHeightValue', topRowHeightInput.value);
+        if (middleRowHeightInput) localStorage.setItem('middleRowHeightValue', middleRowHeightInput.value);
+        if (bottomRowHeightInput) localStorage.setItem('bottomRowHeightValue', bottomRowHeightInput.value);
     }
 }
 
-// 🚀 [신규 기능] LocalStorage에서 저장된 내용을 불러와 적용하는 함수
+// 🚀 LocalStorage에서 저장된 내용을 불러와 적용하는 함수
 function loadSettings() {
     const savedState = localStorage.getItem('noblesseTableState');
     if (savedState) {
         const captureArea = document.getElementById('capture-area');
         if (captureArea) {
-            // 기존 테이블 내용을 저장된 내용으로 교체
             captureArea.innerHTML = savedState;
             
-            // 저장된 행 높이 값을 UI에 반영
-            const savedHeightValue = localStorage.getItem('rowHeightInputValue');
-            if (rowHeightInput && savedHeightValue) {
-                rowHeightInput.value = savedHeightValue;
-                // 로드 후 높이 강제 적용 (CSS 충돌 방지)
-                applyCustomHeightStyle(savedHeightValue + 'px');
+            // 📐 [수정된 로드 로직] 세 가지 높이 입력값 모두 로드 및 적용
+            const savedTopHeight = localStorage.getItem('topRowHeightValue');
+            const savedMiddleHeight = localStorage.getItem('middleRowHeightValue');
+            const savedBottomHeight = localStorage.getItem('bottomRowHeightValue');
+
+            if (topRowHeightInput && savedTopHeight) {
+                topRowHeightInput.value = savedTopHeight;
+                applyRowHeight('.top-data-header, .top-data-row', savedTopHeight + 'px');
+            }
+            if (middleRowHeightInput && savedMiddleHeight) {
+                middleRowHeightInput.value = savedMiddleHeight;
+                applyRowHeight('.middle-notice-row, .middle-title-row', savedMiddleHeight + 'px');
+            }
+            if (bottomRowHeightInput && savedBottomHeight) {
+                bottomRowHeightInput.value = savedBottomHeight;
+                applyRowHeight('.bottom-data-header, .bottom-data-row', savedBottomHeight + 'px');
             }
 
             console.log('이전 설정이 성공적으로 로드되었습니다.');
@@ -57,21 +72,21 @@ function loadSettings() {
     }
 }
 
-// 팔레트 생성 (색상 스와치 화면에 표시)
+
+// 팔레트 생성 (색상 스와치 화면에 표시) - (변동 없음)
 colors.forEach(color => {
     const swatch = document.createElement('div');
     swatch.className = 'color-swatch';
     swatch.style.backgroundColor = color;
     swatch.dataset.color = color;
-    // 클릭 시 색상 적용 및 저장
     swatch.addEventListener('click', () => {
         applyColor(color);
-        saveSettings(); // 🚀 색상 변경 후 저장
+        saveSettings();
     }); 
     colorPalette.appendChild(swatch);
 });
 
-// 셀 클릭 이벤트 (Shift를 누르면 다중 선택)
+// 셀 클릭 이벤트 (Shift를 누르면 다중 선택) - (변동 없음)
 dataTable.addEventListener('click', (e) => {
     if (e.target.tagName === 'TD') {
         const cell = e.target;
@@ -93,15 +108,15 @@ dataTable.addEventListener('click', (e) => {
     }
 });
 
-// 셀 내용 편집 이벤트: 입력이 끝날 때마다 저장
+// 셀 내용 편집 이벤트: 입력이 끝날 때마다 저장 - (변동 없음)
 dataTable.addEventListener('input', (e) => {
     if (e.target.tagName === 'TD' && e.target.contentEditable === 'true') {
-        saveSettings(); // 🚀 내용 변경 후 저장
+        saveSettings();
     }
 });
 
 
-// 🚀 색상 적용 함수
+// 🚀 색상 적용 함수 - (변동 없음)
 function applyColor(color) {
     const target = document.querySelector('input[name="colorTarget"]:checked').value; 
     
@@ -115,18 +130,18 @@ function applyColor(color) {
 }
 
 
-// 📏 글꼴 크기 적용 함수
+// 📏 글꼴 크기 적용 함수 - (변동 없음)
 applyFontSizeBtn.addEventListener('click', () => {
     const newSize = fontSizeInput.value + 'px';
     selectedCells.forEach(cell => {
         cell.style.fontSize = newSize;
         cell.style.lineHeight = '1.2'; 
     });
-    saveSettings(); // 🚀 크기 변경 후 저장
+    saveSettings();
 });
 
 
-// --- 2. 🖼️ 이미지 다운로드 기능 ---
+// --- 2. 🖼️ 이미지 다운로드 기능 --- (변동 없음)
 
 function downloadImage(elementId, filename) {
     const element = document.getElementById(elementId);
@@ -154,7 +169,7 @@ function downloadImage(elementId, filename) {
 }
 
 
-// --- 3. 📐 셀 크기 조절 (Resizer) 로직 ---
+// --- 3. 📐 셀 크기 조절 (Resizer) 로직 --- (개별 드래그 조절 기능 유지)
 
 let currentResizer = null; 
 let startX = 0;
@@ -163,14 +178,12 @@ let startWidth = 0;
 let startHeight = 0;
 let isRowResizer = false;
 
-// 초기화: 각 셀에 리사이저 추가
+// 초기화: 각 셀에 리사이저 추가 - (변동 없음)
 function initializeResizers() {
     document.querySelectorAll('.data-table tr:not(.middle-notice-row, .top-notice-row) td').forEach(td => {
         
-        // 리사이저가 이미 있는지 확인하여 중복 추가 방지
         if (td.querySelector('.col-resizer') || td.querySelector('.row-resizer')) return;
 
-        // 열 크기 조절기 (세로선) - 마지막 열 제외
         if (td.nextElementSibling) {
             let colResizer = document.createElement('div');
             colResizer.className = 'col-resizer';
@@ -178,7 +191,6 @@ function initializeResizers() {
             colResizer.addEventListener('mousedown', startResize);
         }
 
-        // 행 크기 조절기 (가로선)
         const tr = td.parentElement;
         if (!tr.classList.contains('middle-notice-row') && td.getAttribute('colspan') === null) {
             let rowResizer = document.createElement('div');
@@ -189,7 +201,7 @@ function initializeResizers() {
     });
 }
 
-// 리사이즈 시작
+// 리사이즈 시작 - (변동 없음)
 function startResize(e) {
     e.preventDefault(); 
     
@@ -215,7 +227,7 @@ function startResize(e) {
     document.addEventListener('mouseup', stopResize);
 }
 
-// 리사이즈 중
+// 리사이즈 중 - (변동 없음)
 function handleResize(e) {
     if (!currentResizer) return;
 
@@ -257,7 +269,7 @@ function handleResize(e) {
     }
 }
 
-// 리사이즈 종료
+// 리사이즈 종료 - (변동 없음)
 function stopResize() {
     currentResizer = null;
     dataTable.classList.remove('resizing');
@@ -267,11 +279,11 @@ function stopResize() {
     document.removeEventListener('mousemove', handleResize);
     document.removeEventListener('mouseup', stopResize);
     
-    saveSettings(); // 🚀 크기 조절 후 저장
+    saveSettings(); 
 }
 
 
-// --- 4. 🖱️ 왼쪽 메뉴 항목 색상 토글 기능 ---
+// --- 4. 🖱️ 왼쪽 메뉴 항목 색상 토글 기능 --- (변동 없음)
 
 function initializeLeftMenu() {
     const leftMenuItems = document.querySelectorAll('.left-item');
@@ -280,18 +292,14 @@ function initializeLeftMenu() {
         item.addEventListener('click', function() {
             leftMenuItems.forEach(i => i.classList.remove('active'));
             this.classList.add('active');
-            saveSettings(); // 🚀 메뉴 상태 변경 후 저장
+            saveSettings(); 
         });
     });
 }
 
 
-// 🚀 [추가 함수] 모든 행에 강제 높이 스타일을 적용하는 함수 (index.html CSS 규칙 덮어쓰기)
-function applyCustomHeightStyle(newHeight) {
-    // 모든 행을 포함하는 클래스 목록
-    const rowSelectors = `.data-table tr, 
-                          .data-table tr td`;
-
+// 🚀 [수정된 함수] 특정 행 선택자에 강제 높이 스타일을 적용하는 함수
+function applyRowHeight(selector, newHeight) {
     const styleId = 'dynamic-row-height';
     let style = document.getElementById(styleId);
     if (!style) {
@@ -300,48 +308,62 @@ function applyCustomHeightStyle(newHeight) {
         document.head.appendChild(style);
     }
     
-    // 💡 모든 행과 셀에 높이를 !important로 강제 적용
-    style.textContent = `
-        ${rowSelectors} {
+    // 특정 행 그룹과 그 내부의 TD에 높이를 !important로 강제 적용
+    style.textContent += `
+        ${selector}, ${selector} td {
             height: ${newHeight} !important;
-            line-height: 100% !important; /* 높이 조절 시 중앙 정렬 보조 */
+            line-height: 100% !important;
             padding-top: 0px !important;
             padding-bottom: 0px !important;
         }
     `;
-}
-
-
-// --- 5. 📏 모든 행 높이 조절 기능 (기존 로직 수정 및 확장) ---
-
-function initializeRowHeightControl() {
-    if (!applyRowHeightBtn || !rowHeightInput) return;
     
-    applyRowHeightBtn.addEventListener('click', () => {
-        const newHeightValue = rowHeightInput.value;
-        const newHeight = newHeightValue + 'px';
-        
-        // 1. 테이블의 모든 TR 요소에 인라인 스타일 적용
-        document.querySelectorAll('.data-table tr').forEach(row => {
-            // middle-notice-row는 가변 높이를 위해 제외하는 경우도 있지만, 통일성을 위해 일단 적용합니다.
-             row.style.height = newHeight;
-        });
-
-        // 2. 모든 TD 요소에 인라인 스타일 적용
-        document.querySelectorAll('.data-table td').forEach(cell => {
-            cell.style.height = newHeight;
-            cell.style.lineHeight = '100%'; 
-        });
-        
-        // 3. index.html의 style 블록에 있는 강제 축소 규칙을 덮어쓰기 위해 동적 스타일 적용
-        applyCustomHeightStyle(newHeight);
-        
-        saveSettings(); // 🚀 높이 변경 후 저장
+    // 인라인 스타일로도 적용 (DOM에 저장됨)
+    document.querySelectorAll(selector).forEach(row => {
+        row.style.height = newHeight;
+        row.querySelectorAll('td').forEach(td => td.style.height = newHeight);
     });
 }
 
 
-// 페이지 로드 시 기능 초기화
+// --- 5. 📏 그룹별 행 높이 조절 기능 (기존 로직 대폭 수정) ---
+
+function initializeRowHeightControl() {
+    
+    // 1. 상단 데이터 행 그룹 조절
+    if (applyTopRowHeightBtn && topRowHeightInput) {
+        applyTopRowHeightBtn.addEventListener('click', () => {
+            const newHeightValue = topRowHeightInput.value;
+            const newHeight = newHeightValue + 'px';
+            applyRowHeight('.top-data-header, .top-data-row', newHeight);
+            saveSettings();
+        });
+    }
+
+    // 2. 중단 공지/제목 행 그룹 조절
+    if (applyMiddleRowHeightBtn && middleRowHeightInput) {
+        applyMiddleRowHeightBtn.addEventListener('click', () => {
+            const newHeightValue = middleRowHeightInput.value;
+            const newHeight = newHeightValue + 'px';
+            // middle-notice-row와 middle-title-row를 모두 포함
+            applyRowHeight('.middle-notice-row, .middle-title-row', newHeight);
+            saveSettings();
+        });
+    }
+
+    // 3. 하단 데이터 행 그룹 조절
+    if (applyBottomRowHeightBtn && bottomRowHeightInput) {
+        applyBottomRowHeightBtn.addEventListener('click', () => {
+            const newHeightValue = bottomRowHeightInput.value;
+            const newHeight = newHeightValue + 'px';
+            applyRowHeight('.bottom-data-header, .bottom-data-row', newHeight);
+            saveSettings();
+        });
+    }
+}
+
+
+// 페이지 로드 시 기능 초기화 - (변동 없음)
 document.addEventListener('DOMContentLoaded', () => {
     // 1. 저장된 설정을 먼저 로드 (DOM 구조 변경 발생 가능)
     loadSettings(); 
