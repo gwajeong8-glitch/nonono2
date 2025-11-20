@@ -40,13 +40,13 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
         
-        // 2. 제목 설정 불러오기
-        const storedTitle = localStorage.getItem("titleSetting");
-        if (storedTitle) {
-            const titleInput = document.getElementById("titleInput");
-            if (titleInput) {
-                titleInput.value = storedTitle;
-                document.title = storedTitle;
+        // 2. ★ 추가: 글자 크기 설정 불러오기 ★
+        const fontSizeInput = document.getElementById("fontSizeInput");
+        const storedFontSize = localStorage.getItem("tableFontSize");
+        if (storedFontSize) {
+            setVar('--table-font-size', storedFontSize + 'px');
+            if (fontSizeInput) {
+                fontSizeInput.value = storedFontSize;
             }
         }
     }
@@ -67,15 +67,14 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // 컬러 입력 요소 ID 매칭
+    // 컬러 및 사이즈 입력 요소 ID 매칭
     const headerBg = document.getElementById("headerBgColor");
     const headerText = document.getElementById("headerTextColor");
     const rowBg = document.getElementById("rowBgColor");
     const rowText = document.getElementById("rowTextColor");
     const colNumText = document.getElementById("colNumTextColor");
+    const fontSizeInput = document.getElementById("fontSizeInput"); // ★ 추가 ★
     
-    // 제목 입력 요소 ID 매칭
-    const titleInput = document.getElementById("titleInput");
 
     // ★ 컬러 팔레트 로직 ★
     const colorPaletteElement = document.querySelector(".color-palette");
@@ -117,7 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- 이벤트 리스너 설정 (저장 로직 통합) ---
     
-    // 1. 일반 테이블 색상 변경 이벤트 리스너
+    // 1. 테이블 색상 변경 이벤트 리스너
     if (headerBg) headerBg.addEventListener("input", e => { setVar('--table-header-bg', e.target.value); saveSetting('headerBgColor', e.target.value); });
     if (headerText) headerText.addEventListener("input", e => { setVar('--table-header-text', e.target.value); saveSetting('headerTextColor', e.target.value); });
     if (rowBg) rowBg.addEventListener("input", e => { setVar('--table-row-bg', e.target.value); saveSetting('rowBgColor', e.target.value); });
@@ -126,12 +125,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // 2. 특정 셀 색상 변경 이벤트 리스너
     if (colNumText) colNumText.addEventListener("input", e => { setVar('--col-num-text-color', e.target.value); saveSetting('colNumTextColor', e.target.value); });
     
-    // 3. 제목 변경 이벤트 리스너
-    if (titleInput) {
-        titleInput.addEventListener("input", (e) => {
-            const newTitle = e.target.value || "실시간 데이터 현황 - 노블레스 통합 매니지먼트";
-            document.title = newTitle;
-            saveSetting('titleSetting', newTitle);
+    // 3. ★ 추가: 글자 크기 변경 이벤트 리스너 ★
+    if (fontSizeInput) {
+        fontSizeInput.addEventListener("input", (e) => {
+            const size = e.target.value;
+            setVar('--table-font-size', size + 'px');
+            saveSetting('tableFontSize', size);
         });
     }
 });
