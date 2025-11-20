@@ -28,10 +28,17 @@
             backdrop-filter: blur(5px);
         }
         
-        /* 💡 추가 스타일: 텍스트가 잘리지 않도록 주문 유형 헤더 및 행의 padding을 0으로 설정합니다. */
+        /* 💡 최종 수정: 주문 유형 행과 헤더의 높이와 패딩을 강제로 최소화합니다. */
         .bottom-data-header td, .bottom-data-row td {
-            padding-top: 2px !important;
-            padding-bottom: 2px !important;
+            /* 높이를 13px로 강제 지정 */
+            height: 13px !important; 
+            /* 상하 패딩 제거 */
+            padding-top: 0px !important;
+            padding-bottom: 0px !important;
+        }
+        /* 행 자체의 높이도 강제 지정 */
+        .bottom-data-header, .bottom-data-row {
+            height: 13px !important;
         }
     </style>
 </head>
@@ -156,7 +163,7 @@
                 </td>
             </tr>
 
-            <tr class="bottom-data-header" style="height: 13px;">
+            <tr class="bottom-data-header">
                 <td class="w-20" contenteditable="true">주문유형</td>
                 <td class="w-20" contenteditable="true">주문상세</td>
                 <td contenteditable="true">투자금액 (원)</td>
@@ -164,28 +171,28 @@
                 <td contenteditable="true">보장비율</td>
             </tr>
 
-            <tr class="bottom-data-row" style="height: 13px;">
+            <tr class="bottom-data-row">
                 <td contenteditable="true">A</td>
                 <td contenteditable="true">[2종택1]</td>
                 <td contenteditable="true" class="red-text">1,500,000</td>
                 <td contenteditable="true">1,650,000</td>
                 <td contenteditable="true" class="red-text">0%</td>
             </tr>
-            <tr class="bottom-data-row" style="height: 13px;">
+            <tr class="bottom-data-row">
                 <td contenteditable="true">B</td>
                 <td contenteditable="true">[2종택1]</td>
                 <td contenteditable="true">2,500,000</td>
                 <td contenteditable="true">2,750,000</td>
                 <td contenteditable="true" class="red-text">100%</td>
             </tr>
-            <tr class="bottom-data-row" style="height: 13px;">
+            <tr class="bottom-data-row">
                 <td contenteditable="true">C</td>
                 <td contenteditable="true">[2종택1]</td>
                 <td contenteditable="true">0</td>
                 <td contenteditable="true">0</td>
                 <td contenteditable="true" class="red-text">0%</td>
             </tr>
-            <tr class="bottom-data-row" style="height: 13px;">
+            <tr class="bottom-data-row">
                 <td contenteditable="true">D</td>
                 <td contenteditable="true">[2종택1]</td>
                 <td contenteditable="true">0</td>
