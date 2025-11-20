@@ -1,5 +1,5 @@
 :root{
-    /* 기본값 (JavaScript에 의해 덮어쓰거나 저장된 값 사용) */
+    /* 기본값 (테이블 기본 스타일 유지) */
     --table-header-bg: #2196F3;
     --table-header-text: #ffffff;
     --table-row-bg: #1B5E20; /* 녹색 행 배경 */
@@ -7,11 +7,10 @@
     --table-border: rgba(255,255,255,0.15);
     
     /* 고정 색상 */
-    --yellow-bg: #FFD700; /* 노란색 */
-    --dark-text: #1A1A1A; /* 어두운 글자색 */
-    --red-highlight: #FF0000; /* 빨간색 강조 글자 */
+    --yellow-bg: #FFD700;
+    --dark-text: #1A1A1A;
+    --red-highlight: #FF0000; 
     
-    /* JavaScript에서 조정 가능한 변수 */
     --col-num-text-color: var(--red-highlight); 
 }
 
@@ -29,7 +28,7 @@ body{
     height:490px;
     margin:0 auto;
     position:relative;
-    background-image:url("vip.png"); /* 배경 이미지 경로 */
+    background-image:url("vip.png"); 
     background-size:cover;
     background-position: center center;
     background-color: #000;
@@ -87,7 +86,6 @@ body{
 
 /* 테이블 셀 기본 스타일 */
 .data-table td{
-    /* 인라인 스타일이 적용되지 않은 경우에만 사용됨 */
     background: var(--table-row-bg); 
     color: var(--table-row-text); 
     padding:2px 2px; 
@@ -96,7 +94,6 @@ body{
     border-bottom:1px solid var(--table-border);
     border-right:1px solid var(--table-border);
     white-space: nowrap;
-    /* transition 제거 (개별 스타일링 때문에) */
 }
 
 /* 마지막 셀의 오른쪽 경계선 제거 */
@@ -193,7 +190,6 @@ body{
 }
 
 /* 호버 시 글자 잘 보이도록 배경색 수정 */
-/* 이제 개별 셀 스타일이 인라인으로 들어가므로 hover는 기본 셀에만 적용될 수 있습니다. */
 .data-table tr:hover td:not([style*="background-color"]){
     background: #567d58; /* 기존 녹색보다 약간 밝은 색 */
 }
@@ -228,15 +224,7 @@ body{
     display: flex; 
     flex-direction: column; 
 }
-.color-panel {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 5px;
-}
-.color-panel label {
-    flex-grow: 1;
-}
+
 .color-palette {
     display: flex;
     flex-wrap: wrap;
@@ -256,7 +244,7 @@ body{
     transform: scale(1.1);
 }
 
-/* 새로 추가된 부분: 모드 토글 버튼 */
+/* 모드 토글 버튼 */
 .mode-button {
     width: 100%;
     padding: 8px;
