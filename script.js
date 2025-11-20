@@ -22,7 +22,8 @@ let startHeight;
 function getCellId(cell) {
     // 모든 셀에 대해 고유 ID 생성 (행 인덱스 + 열 인덱스)
     const row = cell.closest('tr');
-    const rowIndex = Array.from(row.parentNode.children).indexOf(row);
+    // rowIndex를 사용하여 고유성 확보
+    const rowIndex = Array.from(row.parentNode.children).indexOf(row); 
     const colIndex = cell.cellIndex;
     return `cell-${rowIndex}-${colIndex}`;
 }
@@ -41,7 +42,6 @@ function saveCellCustomStyle(cell, type, value) {
 
 function loadCustomCellStyles() {
     const styles = JSON.parse(localStorage.getItem('customCellStyles') || '{}');
-    // 모든 td 셀을 선택합니다. 
     const allCells = document.querySelectorAll('.data-table td'); 
 
     allCells.forEach(cell => {
@@ -60,6 +60,8 @@ function loadCustomCellStyles() {
         if (!cell.hasAttribute('contenteditable')) {
             cell.setAttribute('contenteditable', 'true'); 
         }
+        
+        // 🌟 모든 셀에 클릭 리스너 재부착 (다중 편집 활성화) 🌟
         cell.removeEventListener('click', handleCellClick);
         cell.addEventListener('click', handleCellClick);
     });
@@ -67,7 +69,7 @@ function loadCustomCellStyles() {
 
 
 // ==========================================================
-// 🌟 행 높이 조절 (Row Resizing) 로직 🌟
+// 행 높이 조절 (Row Resizing) 로직
 // ==========================================================
 
 function setupRowResizing() {
@@ -78,15 +80,14 @@ function setupRowResizing() {
 function startRowResize(e) {
     // 행 높이 조절은 셀의 하단 5px 이내에서만 작동
     const targetCell = e.target.closest('td');
-    if (!targetCell || e.buttons !== 1) return;
+    // colspan을 가진 셀 (공지사항/제목)도 조절 가능하게 수정
+    if (!targetCell || e.buttons !== 1) return; 
     
     const rect = targetCell.getBoundingClientRect();
     const isBottomEdge = rect.bottom - e.clientY < 5;
 
     if (isBottomEdge) {
-        // 행 조절 중에는 열 조절을 무시하도록 설정
         isColResizing = false; 
-        
         isRowResizing = true;
         currentRowResizer = targetCell.closest('tr');
         startY = e.clientY;
@@ -94,7 +95,6 @@ function startRowResize(e) {
         document.body.style.cursor = 'row-resize';
         e.preventDefault(); 
         
-        // document에 이벤트 연결
         document.addEventListener('mousemove', resizeRow);
         document.addEventListener('mouseup', stopRowResize);
     }
@@ -133,7 +133,7 @@ function setupColumnResizing() {
     const table = document.querySelector('.data-table');
     if (!table) return;
 
-    // 모든 열 헤더 행에 클래스를 추가하여 드래그 가능하게 만듭니다.
+    // 모든 열 헤더 행에 클래스를 추가
     const headerRows = table.querySelectorAll('.top-data-header, .bottom-data-header'); 
     
     headerRows.forEach(row => {
@@ -149,7 +149,7 @@ function setupColumnResizing() {
 }
 
 function startColResize(e) {
-    if (isRowResizing) return; // 행 조절 중이면 무시
+    if (isRowResizing) return; 
     
     const targetCell = e.target.closest('.resizable-col');
     if (!targetCell || e.buttons !== 1) return;
@@ -186,10 +186,9 @@ function resizeCol(e) {
 
         if (proposedCurrentWidth >= minWidth && proposedNextWidth >= minWidth) {
             
-            // 모든 행에 너비 적용 (colspan을 가진 행은 건너뜁니다.)
+            // 모든 5열 행에 너비 적용
             table.querySelectorAll('tr').forEach(row => {
                 const cells = row.querySelectorAll('td');
-                // 모든 열이 존재하는 행(colspan이 1인 행)에만 너비 조절 적용
                 if (cells.length === 5) { 
                     cells[colIndex].style.width = proposedCurrentWidth + 'px';
                     cells[colIndex].style.minWidth = proposedCurrentWidth + 'px';
@@ -211,7 +210,7 @@ function stopColResize() {
 }
 
 // ==========================================================
-// 다중 셀 편집 및 행 조절
+// 다중 셀 편집 및 행 조절 (핵심 기능)
 // ==========================================================
 
 function applyColorToActiveTarget(color) {
@@ -232,12 +231,13 @@ function applyFontSizeToActiveCells(size) {
 }
 
 function handleCellClick(event) {
-    // 리사이징 중이면 셀 선택 이벤트 무시
+    // 🌟 이 부분이 다중 편집 기능의 핵심입니다. 🌟
     if (isColResizing || isRowResizing) return; 
 
     const cell = event.currentTarget;
 
     if (event.shiftKey) {
+        // Shift 키를 누르면 추가/제거 (다중 선택)
         if (cell.classList.contains('active-cell')) {
             cell.classList.remove('active-cell');
             currentActiveCells = currentActiveCells.filter(c => c !== cell);
@@ -246,6 +246,7 @@ function handleCellClick(event) {
             currentActiveCells.push(cell);
         }
     } else {
+        // Shift 키를 누르지 않으면 단일 선택
         currentActiveCells.forEach(c => c.classList.remove('active-cell'));
         currentActiveCells = [];
         cell.classList.add('active-cell');
@@ -253,7 +254,7 @@ function handleCellClick(event) {
     }
 }
 
-// 행 추가 로직 (top-data-row 섹션에 추가)
+// 🌟 행 추가 로직 수정 (작동 오류 해결) 🌟
 function addRow() {
     const tableBody = document.querySelector('.data-table tbody');
     // 복제할 기준 행: 마지막 top-data-row
@@ -264,7 +265,8 @@ function addRow() {
         return;
     }
 
-    const newRow = lastRow.cloneNode(true);
+    // cloneNode(true)를 사용하여 모든 자식 노드를 복제
+    const newRow = lastRow.cloneNode(true); 
     newRow.removeAttribute('style'); 
     
     const headerCells = document.querySelector('.top-data-header').querySelectorAll('td');
@@ -280,6 +282,7 @@ function addRow() {
             cell.style.minWidth = headerCells[index].style.minWidth;
         }
 
+        // 🌟 새로 생성된 셀에 클릭 이벤트 리스너 재부착 🌟
         cell.removeEventListener('click', handleCellClick);
         cell.addEventListener('click', handleCellClick);
     });
@@ -289,11 +292,12 @@ function addRow() {
     if (middleTitleRow) {
         tableBody.insertBefore(newRow, middleTitleRow);
     } else {
-        tableBody.appendChild(newRow); // middle-title-row가 없으면 맨 끝에 추가
+        tableBody.appendChild(newRow); 
     }
     alert("새로운 데이터 행이 추가되었습니다.");
 }
 
+// 🌟 행 삭제 로직 수정 (작동 오류 해결) 🌟
 function deleteRow() {
     const tableBody = document.querySelector('.data-table tbody');
     const allTopRows = tableBody.querySelectorAll('.top-data-row');
@@ -301,6 +305,7 @@ function deleteRow() {
     if (allTopRows.length > 1) { 
         const rowToDelete = allTopRows[allTopRows.length - 1]; 
 
+        // 로컬 스토리지 스타일 제거
         rowToDelete.querySelectorAll('td').forEach(cell => {
             let styles = JSON.parse(localStorage.getItem('customCellStyles') || '{}');
             delete styles[getCellId(cell)];
@@ -309,11 +314,52 @@ function deleteRow() {
 
         rowToDelete.remove();
         alert("마지막 데이터 행이 삭제되었습니다.");
+        // 활성 셀 목록에서 삭제된 셀 제거
         currentActiveCells = currentActiveCells.filter(cell => !rowToDelete.contains(cell));
         
     } else {
         alert("최소 하나의 데이터 행은 유지해야 합니다.");
     }
+}
+
+// 캡처 함수 (이전과 동일)
+function downloadImage(elementId, fileName) {
+    const captureElement = document.getElementById(elementId);
+    
+    currentActiveCells.forEach(cell => cell.classList.remove('active-cell'));
+
+    const button = document.querySelector('.download-button');
+    const originalText = button.textContent;
+    button.textContent = '이미지 생성 중... 잠시만 기다려주세요.';
+    button.disabled = true;
+
+    html2canvas(captureElement, {
+        scale: 2, 
+        allowTaint: true,
+        useCORS: true
+    }).then(canvas => {
+        const image = canvas.toDataURL('image/png');
+
+        const a = document.createElement('a');
+        a.href = image;
+        a.download = fileName;
+        
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        button.textContent = originalText;
+        button.disabled = false;
+        
+        currentActiveCells.forEach(cell => cell.classList.add('active-cell'));
+
+    }).catch(error => {
+        console.error('이미지 생성 중 오류 발생:', error);
+        button.textContent = '❌ 오류 발생 (콘솔 확인)';
+        button.disabled = false;
+        currentActiveCells.forEach(cell => cell.classList.add('active-cell'));
+        alert('이미지 생성에 실패했습니다.');
+    });
 }
 
 
@@ -324,7 +370,7 @@ function deleteRow() {
 document.addEventListener("DOMContentLoaded", () => {
     window.downloadImage = downloadImage; 
 
-    // 1. 셀 스타일 로드 및 contenteditable 설정
+    // 1. 셀 스타일 로드 및 contenteditable 설정 (다중 편집 기능 활성화됨)
     loadCustomCellStyles();
 
     // 2. 열/행 크기 조절 기능 설정
@@ -363,6 +409,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const size = document.getElementById('fontSizeInput').value;
         if (size) { applyFontSizeToActiveCells(parseInt(size)); }
     });
+    // 🌟 버튼 리스너 재설정 🌟
     document.getElementById('addRowBtn').addEventListener('click', addRow);
     document.getElementById('deleteRowBtn').addEventListener('click', deleteRow);
     
