@@ -13,7 +13,7 @@ const colorPalette = document.querySelector('.color-palette');
 const dataTable = document.querySelector('.data-table');
 const applyFontSizeBtn = document.getElementById('applyFontSizeBtn');
 const fontSizeInput = document.getElementById('fontSizeInput');
-let selectedCells = [];
+// let selectedCells = []; // 💡 [수정] 전역 변수 제거 (DOM 기반으로 변경)
 
 // 📐 그룹별 높이 입력 필드 변수
 const topRowHeightInput = document.getElementById('topRowHeightInput');
@@ -97,35 +97,29 @@ colors.forEach(color => {
     swatch.dataset.color = color;
     // 클릭 시 색상 적용 및 저장
     swatch.addEventListener('click', () => {
-        applyColor(color); // 🎨 변경된 applyColor 사용
+        applyColor(color);
         saveSettings();
     }); 
     colorPalette.appendChild(swatch);
 });
 
-// 셀 클릭 이벤트 (Shift를 누르면 다중 선택)
+// 💡 [수정] 셀 클릭 이벤트 (Shift를 누르면 다중 선택) - DOM 기반으로 변경
 dataTable.addEventListener('click', (e) => {
     if (e.target.tagName === 'TD') {
         const cell = e.target;
         
         if (cell.closest('.data-table').classList.contains('resizing')) return;
 
-        // 선택된 셀 목록을 업데이트
-        let currentSelectedCells = Array.from(document.querySelectorAll('.data-table td.selected'));
-
         if (!e.shiftKey) {
-            currentSelectedCells.forEach(c => c.classList.remove('selected'));
-            currentSelectedCells = [];
-        }
-
-        if (cell.classList.contains('selected')) {
-            cell.classList.remove('selected');
-            currentSelectedCells = currentSelectedCells.filter(c => c !== cell);
-        } else {
+            // Shift가 눌리지 않았으면, 모든 선택을 해제하고 현재 셀만 선택
+            document.querySelectorAll('.data-table td.selected').forEach(c => c.classList.remove('selected'));
             cell.classList.add('selected');
-            currentSelectedCells.push(cell);
+        } else {
+            // Shift가 눌렸으면, 토글
+            cell.classList.toggle('selected');
         }
-        selectedCells = currentSelectedCells; // 전역 변수 업데이트
+        
+        // DOM 기반으로 selectedCells를 관리하므로 전역 변수 업데이트 불필요
     }
 });
 
@@ -137,19 +131,20 @@ dataTable.addEventListener('input', (e) => {
 });
 
 
-// 🚀 [수정] 색상 적용 함수: 선택된 라디오 버튼의 상태를 직접 읽어서 적용
+// 🚀 [수정] 색상 적용 함수: DOM의 .selected 클래스만 사용
 function applyColor(color) {
-    // 함수가 호출될 때마다 현재 선택된 라디오 버튼의 value를 읽음
     const target = document.querySelector('input[name="colorTarget"]:checked').value; 
     
-    // 현재 DOM에 있는 .selected 클래스를 가진 모든 TD를 선택
+    // 💡 [핵심 수정] DOM에서 '.selected' 클래스를 가진 모든 TD를 다시 조회
     const cellsToApply = document.querySelectorAll('.data-table td.selected');
 
     cellsToApply.forEach(cell => {
         if (target === 'background') {
             cell.style.backgroundColor = color;
+            // 배경색 적용 시 글자색은 제거하지 않고 유지
         } else { // target === 'text'
             cell.style.color = color;
+            // 글자색 적용 시 배경색은 제거하지 않고 유지
         }
     });
 }
@@ -158,7 +153,7 @@ function applyColor(color) {
 // 📏 글꼴 크기 적용 함수
 applyFontSizeBtn.addEventListener('click', () => {
     const newSize = fontSizeInput.value + 'px';
-    // applyFontSizeBtn 클릭 시에도 현재 DOM의 .selected 셀을 사용
+    // 💡 [수정] DOM에서 '.selected' 클래스를 가진 모든 TD를 다시 조회
     document.querySelectorAll('.data-table td.selected').forEach(cell => {
         cell.style.fontSize = newSize;
         cell.style.lineHeight = '1.2'; 
@@ -168,7 +163,6 @@ applyFontSizeBtn.addEventListener('click', () => {
 
 
 // --- 2. 🖼️ 이미지 다운로드 기능 --- (변동 없음)
-
 function downloadImage(elementId, filename) {
     const element = document.getElementById(elementId);
     const settingPanel = document.getElementById('settingPanel');
@@ -195,8 +189,7 @@ function downloadImage(elementId, filename) {
 }
 
 
-// --- 3. 📐 셀 크기 조절 (Resizer) 로직 --- (개별 드래그 조절 기능 유지)
-
+// --- 3. 📐 셀 크기 조절 (Resizer) 로직 --- (변동 없음)
 let currentResizer = null; 
 let startX = 0;
 let startY = 0;
@@ -206,7 +199,7 @@ let isRowResizer = false;
 
 // 초기화: 각 셀에 리사이저 추가
 function initializeResizers() {
-    // DOM이 변경되었으므로, 기존 리사이저를 제거하고 새로 추가해야 함
+    // DOM이 변경되었으므로, 기존 리사이저를 제거하고 새로 추가
     document.querySelectorAll('.col-resizer, .row-resizer').forEach(r => r.remove());
 
     document.querySelectorAll('.data-table tr:not(.middle-notice-row, .top-notice-row) td').forEach(td => {
@@ -310,9 +303,7 @@ function stopResize() {
 // --- 4. 🖱️ 왼쪽 메뉴 항목 색상 토글 기능 ---
 function initializeLeftMenu() {
     const leftMenuItems = document.querySelectorAll('.left-item');
-    // DOM이 다시 로드될 경우를 대비해 이벤트 리스너를 다시 할당합니다.
     leftMenuItems.forEach(item => {
-        // 기존 리스너 중복 방지를 위해 확인 필요하지만, 여기서는 단순화하여 재할당
         item.onclick = function() {
             leftMenuItems.forEach(i => i.classList.remove('active'));
             this.classList.add('active');
@@ -322,7 +313,7 @@ function initializeLeftMenu() {
 }
 
 
-// 🚀 [수정] 특정 행 선택자에 강제 높이 스타일을 적용하는 함수
+// 🚀 특정 행 선택자에 강제 높이 스타일을 적용하는 함수
 function applyRowHeight(selector, newHeight, isLoad = false) {
     const styleId = 'dynamic-row-height';
     let style = document.getElementById(styleId);
@@ -332,11 +323,7 @@ function applyRowHeight(selector, newHeight, isLoad = false) {
         document.head.appendChild(style);
     }
     
-    // 로드 시에는 기존 스타일을 누적하지 않고 새로 적용해야 하므로, 간단한 방식으로 구현
-    // 여기서는 매번 스타일을 새로 추가하지 않고, 로드 시 인라인 스타일만 적용
-    
     if (!isLoad) {
-        // 적용 버튼 클릭 시에만 동적 스타일 추가 (CSS 우선 순위 보장)
         style.textContent += `
             ${selector}, ${selector} td {
                 height: ${newHeight} !important;
@@ -393,9 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSettings(); 
     
     // 2. 새로운 DOM 구조에 맞춰 모든 이벤트와 리사이저를 초기화
-    // loadSettings()가 DOM을 교체했으므로, 요소를 다시 선택해야 함
-    // (선택된 셀 업데이트 로직은 셀 클릭 이벤트에서 처리)
-    initializeColorTargetControl(); // 🎨 색상 타겟 컨트롤 초기화
+    initializeColorTargetControl(); 
     initializeResizers(); 
     initializeLeftMenu(); 
     initializeRowHeightControl();
