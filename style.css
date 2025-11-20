@@ -1,262 +1,262 @@
 :root{
-    /* 기본값 (테이블 기본 스타일 유지) */
-    --table-header-bg: #2196F3;
-    --table-header-text: #ffffff;
-    --table-row-bg: #1B5E20; /* 녹색 행 배경 */
-    --table-row-text: #C8F7DC; /* 밝은 녹색 행 글자 */
-    --table-border: rgba(255,255,255,0.15);
-    
-    /* 고정 색상 */
-    --yellow-bg: #FFD700;
-    --dark-text: #1A1A1A;
-    --red-highlight: #FF0000; 
-    
-    --col-num-text-color: var(--red-highlight); 
+    /* 기본값 (테이블 기본 스타일 유지) */
+    --table-header-bg: #2196F3;
+    --table-header-text: #ffffff;
+    --table-row-bg: #1B5E20; /* 녹색 행 배경 */
+    --table-row-text: #C8F7DC; /* 밝은 녹색 행 글자 */
+    --table-border: rgba(255,255,255,0.15);
+    
+    /* 고정 색상 */
+    --yellow-bg: #FFD700;
+    --dark-text: #1A1A1A;
+    --red-highlight: #FF0000; 
+    
+    --col-num-text-color: var(--red-highlight); 
 }
 
 /* 래퍼 (캡처 대상 영역) */
 .wrap{
-    width:1024px;
-    height:490px;
-    margin:20px auto 0 auto; 
-    position:relative;
-    overflow: hidden;
+    width:1024px;
+    height:490px;
+    margin:20px auto 0 auto; 
+    position:relative;
+    overflow: hidden;
 }
 
 /* 상단 탭 */
 .top-sub-menu{
-    position:absolute;
-    top:30px;
-    left:190px;
-    display:flex;
-    gap:20px;
-    z-index:5;
+    position:absolute;
+    top:30px;
+    left:190px;
+    display:flex;
+    gap:20px;
+    z-index:5;
 }
 .top-sub-menu .menu{
-    background:rgba(160,160,160,0.3);
-    padding:8px 15px;
-    border-radius:5px;
-    font-size:14px;
+    background:rgba(160,160,160,0.3);
+    padding:8px 15px;
+    border-radius:5px;
+    font-size:14px;
 }
 
 /* 왼쪽 메뉴 */
 .left-menu{
-    position:absolute;
-    left:50px;
-    top:100px;
-    width:115px;
-    line-height:16px;
-    font-size:13px;
-    z-index:5;
+    position:absolute;
+    left:50px;
+    top:100px;
+    width:115px;
+    line-height:16px;
+    font-size:13px;
+    z-index:5;
 }
 .left-item{
-    padding:1px 0;
-    cursor:pointer;
-    transition:0.15s;
+    padding:1px 0;
+    cursor:pointer;
+    transition:0.15s;
 }
 .left-item.active{
-    color:#ffdd66;
-    font-weight:700;
-    text-shadow:0 0 6px #ffdd66;
+    color:#ffdd66;
+    font-weight:700;
+    text-shadow:0 0 6px #ffdd66;
 }
 /* 표 */
 .data-table{
-    position:absolute;
-    top:80px;
-    left:155px; 
-    width:730px; 
-    border-collapse:collapse;
-    font-size:8px;
-    z-index:4;
-    overflow:hidden;
-    box-shadow:0 2px 0 rgba(0,0,0,0.35);
+    position:absolute;
+    top:80px;
+    left:155px; 
+    width:730px; 
+    border-collapse:collapse;
+    font-size:8px;
+    z-index:4;
+    overflow:hidden;
+    box-shadow:0 2px 0 rgba(0,0,0,0.35);
 }
 
 /* 테이블 셀 기본 스타일 */
 .data-table td{
-    background: var(--table-row-bg); 
-    color: var(--table-row-text); 
-    padding:2px 2px; 
-    min-height:16px;
-    text-align:center;
-    border-bottom:1px solid var(--table-border);
-    border-right:1px solid var(--table-border);
-    white-space: nowrap;
-    outline: none; 
+    background: var(--table-row-bg); 
+    color: var(--table-row-text); 
+    padding:2px 2px; 
+    min-height:16px;
+    text-align:center;
+    border-bottom:1px solid var(--table-border);
+    border-right:1px solid var(--table-border);
+    white-space: nowrap;
+    outline: none; 
 }
 
 /* 마지막 셀의 오른쪽 경계선 제거 */
 .data-table tr td:last-child {
-    border-right: none;
+    border-right: none;
 }
 
 /* 활성 셀(td) 스타일: 클릭 시 테두리로 강조 */
 .data-table td.selected {
-    outline: 2px solid #FFD700 !important; 
-    outline-offset: -2px;
-    cursor: pointer;
+    outline: 2px solid #FFD700 !important; 
+    outline-offset: -2px;
+    cursor: pointer;
 }
 
 /* 상단 공지 통합 셀 */
 .data-table .top-notice-row td {
-    background: var(--yellow-bg); 
-    color: var(--dark-text); 
-    text-align: left;
-    padding: 1px 4px; 
-    font-size: 8px;
-    font-weight: 700;
-    line-height: 1.2;
-    border-bottom: 2px solid var(--table-border);
-    white-space: normal; 
+    background: var(--yellow-bg); 
+    color: var(--dark-text); 
+    text-align: left;
+    padding: 1px 4px; 
+    font-size: 8px;
+    font-weight: 700;
+    line-height: 1.2;
+    border-bottom: 2px solid var(--table-border);
+    white-space: normal; 
 }
 .data-table .top-notice-mark {
-    color: var(--red-highlight); 
-    font-weight: 900;
-    margin-right: 2px;
+    color: var(--red-highlight); 
+    font-weight: 900;
+    margin-right: 2px;
 }
 
 /* 헤더 행 */
 .data-table .top-data-header td {
-    background: var(--table-header-bg); 
-    color: var(--table-header-text); 
-    font-weight: 700;
-    height: 15px; 
-    width: 20%; 
+    background: var(--table-header-bg); 
+    color: var(--table-header-text); 
+    font-weight: 700;
+    height: 15px; 
+    width: 20%; 
 }
 
 /* 데이터 행 */
 .data-table .top-data-row td {
-    height: 15px; 
+    height: 15px; 
 }
 .data-table .top-data-row td:nth-child(3),
 .data-table .top-data-row td:nth-child(4) {
-    color: var(--col-num-text-color); 
-    font-weight: 700;
+    color: var(--col-num-text-color); 
+    font-weight: 700;
 }
 
 /* 중간 제목 셀 */
 .data-table .middle-title-row td {
-    background: var(--yellow-bg); 
-    color: var(--dark-text); 
-    font-size: 12px;
-    font-weight: 900;
-    padding: 6px 4px; 
-    border-bottom: 2px solid var(--table-border);
+    background: var(--yellow-bg); 
+    color: var(--dark-text); 
+    font-size: 12px;
+    font-weight: 900;
+    padding: 6px 4px; 
+    border-bottom: 2px solid var(--table-border);
 }
 
 /* 중간 공지사항 셀 */
 .data-table .middle-notice-row td {
-    background: var(--yellow-bg); 
-    color: var(--dark-text); 
-    text-align: left;
-    padding: 4px 6px; 
-    font-size: 8px;
-    line-height: 1.3; 
-    white-space: normal; 
-    border-bottom: 2px solid var(--table-border);
+    background: var(--yellow-bg); 
+    color: var(--dark-text); 
+    text-align: left;
+    padding: 4px 6px; 
+    font-size: 8px;
+    line-height: 1.3; 
+    white-space: normal; 
+    border-bottom: 2px solid var(--table-border);
 }
 
 /* 하단 데이터 헤더 */
 .data-table .bottom-data-header td {
-    background: var(--table-header-bg); 
-    color: var(--table-header-text); 
-    font-weight: 700;
-    font-size: 14px;
-    width: 20%; 
+    background: var(--table-header-bg); 
+    color: var(--table-header-text); 
+    font-weight: 700;
+    font-size: 14px;
+    width: 20%; 
 }
 
 /* 하단 데이터 행 */
 .data-table .bottom-data-row td {
-    font-weight: 700;
-    font-size: 14px;
+    font-weight: 700;
+    font-size: 14px;
 }
 .data-table .bottom-data-row .red-text {
-    color: var(--col-num-text-color); 
+    color: var(--col-num-text-color); 
 }
 
-/* 호버 시 배경색 수정 */
-.data-table tr:hover td:not([style*="background-color"]){
-    background: #567d58; 
+/* 🚀 [수정됨] 호버 시 배경색: .selected 클래스가 없는 셀에만 적용 */
+.data-table tr:hover td:not([style*="background-color"]):not(.selected){
+    background: #567d58; 
 }
 
 
 /* --- 설정 패널 스타일 --- */
 .setting-panel{
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    width: 250px;
-    padding: 15px;
-    border: 1px solid #333;
-    border-radius: 8px;
-    color: white;
-    z-index: 100; 
-    font-size: 12px;
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 250px;
+    padding: 15px;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: white;
+    z-index: 100; 
+    font-size: 12px;
 }
 .setting-panel h3{
-    margin-top: 10px;
-    margin-bottom: 10px;
-    font-size: 14px;
-    border-bottom: 1px solid #333;
-    padding-bottom: 5px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 5px;
 }
 .color-palette {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    padding: 5px 0;
-    border-bottom: 1px solid #333; 
-    margin-bottom: 10px; 
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 5px 0;
+    border-bottom: 1px solid #333; 
+    margin-bottom: 10px; 
 }
 .color-swatch {
-    width: 20px;
-    height: 20px;
-    border: 1px solid #fff;
-    cursor: pointer;
-    transition: transform 0.1s;
+    width: 20px;
+    height: 20px;
+    border: 1px solid #fff;
+    cursor: pointer;
+    transition: transform 0.1s;
 }
 .color-swatch:hover {
-    transform: scale(1.1);
+    transform: scale(1.1);
 }
 .download-button {
-    width: 100%;
-    padding: 10px;
-    margin-top: 15px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.2s;
+    width: 100%;
+    padding: 10px;
+    margin-top: 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
 }
 .download-button:hover {
-    background-color: #0056b3;
+    background-color: #0056b3;
 }
 
 /* --- 열/행 크기 조절 (Resizer) 스타일 --- */
 .data-table td {
-    position: relative;
+    position: relative;
 }
 
 /* 열 크기 조절 커서 변경 */
 .col-resizer {
-    position: absolute;
-    right: 0;
-    top: 0;
-    height: 100%;
-    width: 5px;
-    cursor: col-resize;
-    z-index: 5;
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 5px;
+    cursor: col-resize;
+    z-index: 5;
 }
 
 /* 행 크기 조절 커서 변경 */
 .row-resizer {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 5px;
-    cursor: row-resize;
-    z-index: 5;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    cursor: row-resize;
+    z-index: 5;
 }
