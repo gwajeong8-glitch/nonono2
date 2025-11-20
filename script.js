@@ -9,9 +9,9 @@ const colors = [
     '#228B22', '#CD5C5C', '#6A5ACD' 
 ];
 
-// 💡 안전성 보강: 요소가 없을 경우 null을 반환하여 에러 방지
 const colorPalette = document.querySelector('.color-palette');
-const dataTable = document.querySelector('.data-table');
+// dataTable은 DOMContentLoaded 이후에 다시 할당될 수 있음
+let dataTable = document.querySelector('.data-table');
 const applyFontSizeBtn = document.getElementById('applyFontSizeBtn');
 const fontSizeInput = document.getElementById('fontSizeInput');
 
@@ -31,12 +31,12 @@ const resizerDisplay = document.getElementById('resizerDisplay');
 function saveSettings() {
     const captureArea = document.getElementById('capture-area');
     if (captureArea) {
-        // 현재 HTML 상태 저장
+        // 테이블 내용 전체 저장
         localStorage.setItem('noblesseTableState', captureArea.innerHTML);
         
         // 📐 세 가지 높이 입력값 모두 저장
         if (topRowHeightInput) localStorage.setItem('topRowHeightValue', topRowHeightInput.value);
-        if (middleRowHeightInput) localStorage.setItem('middleRowHeightValue', middleRowHeightInput.value);
+        if (middleRowHeightInput) localStorage.setItem('middleRowHeightValue', middleRowRowHeightInput.value);
         if (bottomRowHeightInput) localStorage.setItem('bottomRowHeightValue', bottomRowHeightInput.value);
 
         // 🎨 현재 선택된 색상 타겟도 저장
@@ -45,80 +45,55 @@ function saveSettings() {
     }
 }
 
-// 🚀 LocalStorage에서 저장된 내용을 불러와 적용하는 함수 (최종 안정성 강화)
+// 🚀 LocalStorage에서 저장된 내용을 불러와 적용하는 함수
 function loadSettings() {
     const savedState = localStorage.getItem('noblesseTableState');
-    if (!savedState) return; 
+    if (savedState) {
+        const captureArea = document.getElementById('capture-area');
+        if (captureArea) {
+            // 저장된 HTML 상태로 DOM을 변경
+            captureArea.innerHTML = savedState;
+            
+            // dataTable 변수를 새로 로드된 DOM 요소로 업데이트
+            dataTable = document.querySelector('.data-table');
+            
+            // 📐 세 가지 높이 입력값 로드 및 UI 업데이트 (CSS 적용은 initializeRowHeightControl에서 담당)
+            const savedTopHeight = localStorage.getItem('topRowHeightValue');
+            const savedMiddleHeight = localStorage.getItem('middleRowHeightValue');
+            const savedBottomHeight = localStorage.getItem('bottomRowHeightValue');
 
-    const captureArea = document.getElementById('capture-area');
-    if (!captureArea) {
-        console.warn('DOM에 capture-area ID가 없어 설정을 로드할 수 없습니다.');
-        return;
-    }
+            if (topRowHeightInput && savedTopHeight) {
+                topRowHeightInput.value = savedTopHeight;
+            }
+            if (middleRowHeightInput && savedMiddleHeight) {
+                middleRowHeightInput.value = savedMiddleHeight;
+            }
+            if (bottomRowHeightInput && savedBottomHeight) {
+                bottomRowHeightInput.value = savedBottomHeight;
+            }
+            
+            // 🎨 저장된 색상 타겟 로드
+            const savedColorTarget = localStorage.getItem('colorTarget') || 'text';
+            const targetInput = document.querySelector(`input[name="colorTarget"][value="${savedColorTarget}"]`);
+            if(targetInput) targetInput.checked = true;
 
-    // 🚨 중요: 로드 시도 전, 현재 HTML을 임시 백업해 둡니다.
-    const initialContent = captureArea.innerHTML;
-
-    try {
-        // 1. 저장된 상태 적용 시도
-        captureArea.innerHTML = savedState;
-        
-        // 2. 나머지 설정 (높이, 색상 타겟) 로드 및 적용
-        const savedTopHeight = localStorage.getItem('topRowHeightValue');
-        const savedMiddleHeight = localStorage.getItem('middleRowHeightValue');
-        const savedBottomHeight = localStorage.getItem('bottomRowHeightValue');
-        const savedColorTarget = localStorage.getItem('colorTarget') || 'text';
-
-        // 높이 입력 필드 존재 여부 확인 후 로드 및 적용
-        if (topRowHeightInput && savedTopHeight) {
-            topRowHeightInput.value = savedTopHeight;
-            applyRowHeight('.top-data-header, .top-data-row', savedTopHeight + 'px', true);
+            console.log('이전 설정이 성공적으로 로드되었습니다. (Local Storage)');
         }
-        if (middleRowHeightInput && savedMiddleHeight) {
-            middleRowHeightInput.value = savedMiddleHeight;
-            applyRowHeight('.middle-notice-row', savedMiddleHeight + 'px', true); 
-        }
-        if (bottomRowHeightInput && savedBottomHeight) {
-            bottomRowHeightInput.value = savedBottomHeight;
-            applyRowHeight('.bottom-data-header, .bottom-data-row', savedBottomHeight + 'px', true);
-        }
-        
-        // 색상 타겟 로드
-        const targetInput = document.querySelector(`input[name="colorTarget"][value="${savedColorTarget}"]`);
-        if(targetInput) targetInput.checked = true;
-
-        console.log('이전 설정이 성공적으로 로드되었습니다.');
-        
-    } catch (e) {
-        console.error('⚠️ 저장된 HTML 상태 로드 중 오류 발생. 저장 상태를 초기화합니다:', e);
-        
-        // 오류 발생 시: LocalStorage 초기화 및 초기 HTML로 즉시 복원
-        localStorage.removeItem('noblesseTableState'); 
-        localStorage.removeItem('topRowHeightValue');
-        localStorage.removeItem('middleRowHeightValue');
-        localStorage.removeItem('bottomRowHeightValue');
-        localStorage.removeItem('colorTarget');
-        
-        // 🚨 즉시 초기 HTML 구조로 복원하여 화면 깨짐 방지
-        captureArea.innerHTML = initialContent;
-
-        // 사용자에게 현재 상황을 알림
-        alert('이전 저장 상태 파일에 오류가 발생하여 설정을 초기화했습니다. 확인 후 계속 사용해 주세요.');
     }
 }
 
 // 🎨 색상 타겟 변경 이벤트 리스너 추가
 function initializeColorTargetControl() {
     document.querySelectorAll('input[name="colorTarget"]').forEach(radio => {
-        radio.addEventListener('change', () => {
-            // applyColor(); // 색상 변경 시 바로 적용할 필요는 없으므로 제거 (팔레트 클릭 시 적용)
-            saveSettings(); // 선택이 변경될 때마다 저장
-        });
+        radio.addEventListener('change', saveSettings); // 선택이 변경될 때마다 저장
     });
 }
 
 // 팔레트 생성 (색상 스와치 화면에 표시)
-if (colorPalette && colors.length) {
+function initializeColorPalette() {
+    // 팔레트가 이미 생성되어 있다면 중복 방지
+    if (colorPalette.children.length > 0) return;
+    
     colors.forEach(color => {
         const swatch = document.createElement('div');
         swatch.className = 'color-swatch';
@@ -134,37 +109,49 @@ if (colorPalette && colors.length) {
 }
 
 
-// 💡 셀 클릭 이벤트
-if (dataTable) {
-    dataTable.addEventListener('click', (e) => {
-        const cell = e.target.closest('td');
-        
-        if (cell) {
-            if (cell.closest('.data-table').classList.contains('resizing')) return;
+// 💡 셀 클릭 이벤트: Shift 키를 사용하여 다중 선택/토글 기능을 활성화
+function initializeCellInteraction() {
+    // 기존 dataTable 이벤트 리스너가 있다면 제거 후 다시 등록 (loadSettings 때문에)
+    if (dataTable) {
+        dataTable.removeEventListener('click', handleCellClick);
+        dataTable.removeEventListener('input', saveSettings); 
+    }
+    
+    dataTable = document.querySelector('.data-table');
+    if (!dataTable) return;
+
+    function handleCellClick(e) {
+        if (e.target.tagName === 'TD') {
+            const cell = e.target;
+            
+            // 크기 조절 중에는 셀 선택을 막음
+            if (dataTable.classList.contains('resizing')) return;
 
             if (e.shiftKey) {
+                // Shift 키를 누른 경우: 기존 선택 상태를 유지하고 현재 셀의 선택 상태를 토글합니다.
                 cell.classList.toggle('selected');
             } else {
+                // Shift 키를 누르지 않은 경우: 기존 선택 모두 해제 후 현재 셀만 선택합니다.
                 document.querySelectorAll('.data-table td.selected').forEach(c => c.classList.remove('selected'));
                 cell.classList.add('selected');
             }
         }
-    });
-
+    }
+    
+    dataTable.addEventListener('click', handleCellClick);
+    
     // 셀 내용 편집 이벤트: 입력이 끝날 때마다 저장
     dataTable.addEventListener('input', (e) => {
         if (e.target.tagName === 'TD' && e.target.contentEditable === 'true') {
             saveSettings();
         }
     });
-}
 
+}
 
 // 🚀 색상 적용 함수
 function applyColor(color) {
-    const targetInput = document.querySelector('input[name="colorTarget"]:checked');
-    if (!targetInput) return; // 라디오 버튼이 없을 경우 안전하게 종료
-    const target = targetInput.value; 
+    const target = document.querySelector('input[name="colorTarget"]:checked').value; 
     
     // DOM에서 '.selected' 클래스를 가진 모든 TD를 다시 조회
     const cellsToApply = document.querySelectorAll('.data-table td.selected');
@@ -172,19 +159,17 @@ function applyColor(color) {
     cellsToApply.forEach(cell => {
         if (target === 'background') {
             cell.style.backgroundColor = color;
-            // 글자색 스타일 제거 (이전 배경/글자 스타일이 꼬이는 것을 방지)
-            cell.style.color = '';
+            // 배경색이 적용될 경우, 호버 스타일을 오버라이드하기 위해 인라인 스타일을 적용합니다.
+            cell.dataset.bgColor = color; 
         } else { // target === 'text'
             cell.style.color = color;
-            // 배경색 스타일 제거
-            cell.style.backgroundColor = '';
         }
     });
 }
 
 
 // 📏 글꼴 크기 적용 함수
-if (applyFontSizeBtn && fontSizeInput) {
+if (applyFontSizeBtn) {
     applyFontSizeBtn.addEventListener('click', () => {
         const newSize = fontSizeInput.value + 'px';
         document.querySelectorAll('.data-table td.selected').forEach(cell => {
@@ -200,25 +185,14 @@ if (applyFontSizeBtn && fontSizeInput) {
 function downloadImage(elementId, filename) {
     const element = document.getElementById(elementId);
     const settingPanel = document.getElementById('settingPanel');
-    
-    if (!element) return;
-
-    // 설정 패널 숨기기
-    if (settingPanel) settingPanel.style.display = 'none';
-
-    if (typeof html2canvas === 'undefined') {
-        console.error('html2canvas 라이브러리가 로드되지 않았습니다.');
-        if (settingPanel) settingPanel.style.display = 'block';
-        return;
-    }
+    settingPanel.style.display = 'none';
 
     html2canvas(element, {
         scale: 2, 
         backgroundColor: null, 
         useCORS: true 
     }).then(canvas => {
-        // 설정 패널 다시 표시
-        if (settingPanel) settingPanel.style.display = 'block';
+        settingPanel.style.display = 'block';
 
         const dataURL = canvas.toDataURL('image/png');
         const link = document.createElement('a');
@@ -229,12 +203,12 @@ function downloadImage(elementId, filename) {
         document.body.removeChild(link);
     }).catch(error => {
         console.error('이미지 캡처 중 오류 발생:', error);
-        if (settingPanel) settingPanel.style.display = 'block'; 
+        settingPanel.style.display = 'block'; 
     });
 }
 
 
-// --- 3. 📐 셀 크기 조절 (Resizer) 로직 ---
+// --- 3. 📐 셀 크기 조절 (Resizer) 로직 --- 
 let currentResizer = null; 
 let startX = 0;
 let startY = 0;
@@ -244,21 +218,27 @@ let isRowResizer = false;
 
 // 초기화: 각 셀에 리사이저 추가
 function initializeResizers() {
-    // DOM이 변경될 때마다 호출되므로, 기존 리사이저를 제거하고 새로 추가
+    // DOM이 변경되었으므로, 기존 리사이저를 제거하고 새로 추가
     document.querySelectorAll('.col-resizer, .row-resizer').forEach(r => r.remove());
 
-    document.querySelectorAll('.data-table tr td').forEach(td => {
-        // 셀이 병합된 경우 (colspan) 열 리사이저를 추가하지 않음
-        if (td.nextElementSibling && td.getAttribute('colspan') === null) {
+    // dataTable을 새로 로드된 DOM에서 다시 참조
+    dataTable = document.querySelector('.data-table');
+    if (!dataTable) return;
+    
+    dataTable.querySelectorAll('tr:not(.middle-notice-row, .top-notice-row) td').forEach(td => {
+        
+        // 열 리사이저 (td.nextElementSibling이 있는 경우에만 추가)
+        if (td.nextElementSibling) {
             let colResizer = document.createElement('div');
             colResizer.className = 'col-resizer';
             td.appendChild(colResizer);
             colResizer.addEventListener('mousedown', startResize);
         }
 
-        const row = td.parentElement;
-        // top-notice-row와 middle-notice-row는 행 리사이저를 추가하지 않음
-        if (!row.classList.contains('top-notice-row') && !row.classList.contains('middle-notice-row') && td.getAttribute('colspan') === null) {
+        // 행 리사이저
+        const tr = td.parentElement;
+        // top-notice-row처럼 colspan이 있는 셀에도 리사이저가 추가되는 것을 방지
+        if (td.getAttribute('colspan') === null) {
             let rowResizer = document.createElement('div');
             rowResizer.className = 'row-resizer';
             td.appendChild(rowResizer);
@@ -267,6 +247,7 @@ function initializeResizers() {
     });
 }
 
+// 리사이즈 로직 (변경 없음)
 function startResize(e) {
     e.preventDefault(); 
     
@@ -279,12 +260,12 @@ function startResize(e) {
     if (currentResizer.classList.contains('col-resizer')) {
         isRowResizer = false;
         startWidth = cell.offsetWidth;
-        if (dataTable) dataTable.classList.add('resizing');
+        dataTable.classList.add('resizing');
         if (resizerDisplay) resizerDisplay.style.opacity = 1;
     } else if (currentResizer.classList.contains('row-resizer')) {
         isRowResizer = true;
         startHeight = cell.offsetHeight;
-        if (dataTable) dataTable.classList.add('resizing');
+        dataTable.classList.add('resizing');
         if (resizerDisplay) resizerDisplay.style.opacity = 1;
     }
     
@@ -333,7 +314,7 @@ function handleResize(e) {
 
 function stopResize() {
     currentResizer = null;
-    if (dataTable) dataTable.classList.remove('resizing');
+    dataTable.classList.remove('resizing');
     
     if (resizerDisplay) resizerDisplay.style.opacity = 0; 
     
@@ -348,22 +329,24 @@ function stopResize() {
 function initializeLeftMenu() {
     const leftMenuItems = document.querySelectorAll('.left-item');
     leftMenuItems.forEach(item => {
-        item.onclick = function() {
-            leftMenuItems.forEach(i => i.classList.remove('active'));
-            this.classList.add('active');
-            saveSettings(); 
-        };
+        // 기존 리스너 제거 후 다시 등록
+        item.removeEventListener('click', handleLeftMenuClick);
+        item.addEventListener('click', handleLeftMenuClick);
     });
+    
+    function handleLeftMenuClick() {
+        leftMenuItems.forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+        saveSettings(); 
+    }
 }
 
 
 // 🚀 특정 행 선택자에 강제 높이 스타일을 적용하는 함수
-function applyRowHeight(selector, newHeight, isLoad = false) {
-    // 인라인 스타일로 적용 (DOM에 저장됨)
+function applyRowHeight(selector, newHeight) {
+    // 인라인 스타일로 적용
     document.querySelectorAll(selector).forEach(row => {
-        // row 요소에 직접 높이 적용
         row.style.height = newHeight;
-        // row의 모든 td 요소에 높이 적용
         row.querySelectorAll('td').forEach(td => td.style.height = newHeight);
     });
 }
@@ -379,16 +362,19 @@ function initializeRowHeightControl() {
             applyRowHeight('.top-data-header, .top-data-row', newHeight);
             saveSettings();
         });
+        // 로드 시에도 초기 높이 적용 (loadSettings가 값을 업데이트했을 경우)
+        applyRowHeight('.top-data-header, .top-data-row', topRowHeightInput.value + 'px');
     }
 
     if (applyMiddleRowHeightBtn && middleRowHeightInput) {
         applyMiddleRowHeightBtn.addEventListener('click', () => {
             const newHeightValue = middleRowHeightInput.value;
             const newHeight = newHeightValue + 'px';
-            // middle-notice-row만 선택 (middle-title-row는 HTML에 없음)
-            applyRowHeight('.middle-notice-row', newHeight);
+            applyRowHeight('.middle-notice-row, .middle-title-row', newHeight);
             saveSettings();
         });
+        // 로드 시에도 초기 높이 적용
+        applyRowHeight('.middle-notice-row, .middle-title-row', middleRowHeightInput.value + 'px');
     }
 
     if (applyBottomRowHeightBtn && bottomRowHeightInput) {
@@ -398,24 +384,28 @@ function initializeRowHeightControl() {
             applyRowHeight('.bottom-data-header, .bottom-data-row', newHeight);
             saveSettings();
         });
+        // 로드 시에도 초기 높이 적용
+        applyRowHeight('.bottom-data-header, .bottom-data-row', bottomRowHeightInput.value + 'px');
     }
 }
 
 
 // 페이지 로드 시 기능 초기화
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. 저장된 설정을 먼저 로드 (DOM 구조 변경 발생 가능)
+    // 1. 색상 팔레트 초기화 (DOM 구조와 무관)
+    initializeColorPalette(); 
+    
+    // 2. 저장된 설정을 먼저 로드하여 DOM 구조와 UI 입력값 복원
     loadSettings(); 
     
-    // 2. 새로운 DOM 구조에 맞춰 모든 이벤트와 리사이저를 초기화
+    // 3. 로드된 새로운 DOM 구조에 맞춰 모든 이벤트와 리사이저를 초기화
+    //    * 중요: 이 순서대로 실행되어야 DOM 요소에 이벤트 리스너가 정확히 연결됩니다.
+    initializeCellInteraction(); 
     initializeColorTargetControl(); 
     initializeResizers(); 
     initializeLeftMenu(); 
-    initializeRowHeightControl();
-    
+    initializeRowHeightControl(); // UI 입력값을 바탕으로 최종 높이 적용
+
     // 다운로드 버튼에 이벤트 핸들러 할당
-    const downloadButton = document.querySelector('.download-button');
-    if (downloadButton) {
-        downloadButton.onclick = () => downloadImage('capture-area', 'noblesse_data_capture.png');
-    }
+    document.querySelector('.download-button').onclick = () => downloadImage('capture-area', 'noblesse_data_capture.png');
 });
