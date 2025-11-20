@@ -107,13 +107,14 @@ dataTable.addEventListener('click', (e) => {
     if (e.target.tagName === 'TD') {
         const cell = e.target;
         
+        // 크기 조절 중에는 셀 선택을 막음
         if (cell.closest('.data-table').classList.contains('resizing')) return;
 
         if (e.shiftKey) {
-            // Shift 키를 누른 경우: 선택 상태를 토글
+            // Shift 키를 누른 경우: 기존 선택 상태를 유지하고 현재 셀의 선택 상태를 토글합니다.
             cell.classList.toggle('selected');
         } else {
-            // Shift 키를 누르지 않은 경우: 기존 선택 모두 해제 후 현재 셀만 선택
+            // Shift 키를 누르지 않은 경우: 기존 선택 모두 해제 후 현재 셀만 선택합니다.
             document.querySelectorAll('.data-table td.selected').forEach(c => c.classList.remove('selected'));
             cell.classList.add('selected');
         }
