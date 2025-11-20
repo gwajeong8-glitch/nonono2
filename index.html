@@ -9,8 +9,16 @@
 
 <div class="setting-panel">
     <div class="color-control">
-        <h3>🎨 테이블 색상 설정</h3>
+        <h3>🎨 테이블 스타일 설정</h3>
+        
+        <div class="size-control">
+            <label for="fontSizeInput">표 글자 크기 (px)</label>
+            <input type="number" id="fontSizeInput" value="8" min="5" max="20" step="1">
+        </div>
+        
         <div class="color-palette-container">
+            <div class="color-palette">
+                </div>
             <div class="color-panel">
                 <label for="headerBgColor">헤더 배경</label>
                 <input type="color" id="headerBgColor" value="#2196F3">
@@ -32,17 +40,9 @@
                 <input type="color" id="colNumTextColor" value="#FF0000">
             </div>
         </div>
-        <div class="color-palette">
-            </div>
-    </div>
-    
-    <div class="title-control">
-        <h3>📝 대시보드 제목 설정</h3>
-        <span class="subtitle" style="display:none;"></span>
-        <div class="title" style="display:none;">실시간 데이터 현황</div>
-        <input type="text" id="titleInput" placeholder="새로운 제목 입력">
     </div>
 </div>
+
 <div class="wrap" id="capture-area"> 
 
     <div class="top-menu">
@@ -51,7 +51,6 @@
         <div class="menu">노블레스 회원 전용룸</div>
     </div>
 
-    <div class="noblesse-heart"></div>
     <div class="left-menu">
         <div class="left-item active">메인 화면</div>
         <div class="left-item">[매칭/고객 상태]</div>
