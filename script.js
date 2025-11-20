@@ -27,6 +27,11 @@ function saveSettings() {
     const captureArea = document.getElementById('capture-area');
     if (captureArea) {
         localStorage.setItem('noblesseTableState', captureArea.innerHTML);
+        
+        // 추가: 행 높이 입력값도 저장하여 로드 시 UI에 표시
+        if (rowHeightInput) {
+             localStorage.setItem('rowHeightInputValue', rowHeightInput.value);
+        }
     }
 }
 
@@ -39,13 +44,18 @@ function loadSettings() {
             // 기존 테이블 내용을 저장된 내용으로 교체
             captureArea.innerHTML = savedState;
             
-            // DOM이 변경되었으므로, 리사이저와 기타 요소들을 다시 초기화해야 함
-            // (DOMContentLoaded에서 호출되므로 이 함수 내에서 다시 호출하지 않음)
+            // 저장된 행 높이 값을 UI에 반영
+            const savedHeightValue = localStorage.getItem('rowHeightInputValue');
+            if (rowHeightInput && savedHeightValue) {
+                rowHeightInput.value = savedHeightValue;
+                // 로드 후 높이 강제 적용 (CSS 충돌 방지)
+                applyCustomHeightStyle(savedHeightValue + 'px');
+            }
+
             console.log('이전 설정이 성공적으로 로드되었습니다.');
         }
     }
 }
-
 
 // 팔레트 생성 (색상 스와치 화면에 표시)
 colors.forEach(color => {
@@ -155,7 +165,6 @@ let isRowResizer = false;
 
 // 초기화: 각 셀에 리사이저 추가
 function initializeResizers() {
-    // 주의: loadSettings 후 DOM이 재구성되므로, 이 함수가 loadSettings 후에 호출되어야 함
     document.querySelectorAll('.data-table tr:not(.middle-notice-row, .top-notice-row) td').forEach(td => {
         
         // 리사이저가 이미 있는지 확인하여 중복 추가 방지
@@ -277,42 +286,55 @@ function initializeLeftMenu() {
 }
 
 
-// --- 5. 📏 하단 행 높이 조절 기능 ---
+// 🚀 [추가 함수] 모든 행에 강제 높이 스타일을 적용하는 함수 (index.html CSS 규칙 덮어쓰기)
+function applyCustomHeightStyle(newHeight) {
+    // 모든 행을 포함하는 클래스 목록
+    const rowSelectors = `.data-table tr, 
+                          .data-table tr td`;
+
+    const styleId = 'dynamic-row-height';
+    let style = document.getElementById(styleId);
+    if (!style) {
+        style = document.createElement('style');
+        style.id = styleId;
+        document.head.appendChild(style);
+    }
+    
+    // 💡 모든 행과 셀에 높이를 !important로 강제 적용
+    style.textContent = `
+        ${rowSelectors} {
+            height: ${newHeight} !important;
+            line-height: 100% !important; /* 높이 조절 시 중앙 정렬 보조 */
+            padding-top: 0px !important;
+            padding-bottom: 0px !important;
+        }
+    `;
+}
+
+
+// --- 5. 📏 모든 행 높이 조절 기능 (기존 로직 수정 및 확장) ---
 
 function initializeRowHeightControl() {
     if (!applyRowHeightBtn || !rowHeightInput) return;
     
     applyRowHeightBtn.addEventListener('click', () => {
-        const newHeight = rowHeightInput.value + 'px';
+        const newHeightValue = rowHeightInput.value;
+        const newHeight = newHeightValue + 'px';
         
-        document.querySelectorAll('.bottom-data-header, .bottom-data-row').forEach(row => {
-            row.style.height = newHeight;
+        // 1. 테이블의 모든 TR 요소에 인라인 스타일 적용
+        document.querySelectorAll('.data-table tr').forEach(row => {
+            // middle-notice-row는 가변 높이를 위해 제외하는 경우도 있지만, 통일성을 위해 일단 적용합니다.
+             row.style.height = newHeight;
         });
 
-        document.querySelectorAll('.bottom-data-header td, .bottom-data-row td').forEach(cell => {
+        // 2. 모든 TD 요소에 인라인 스타일 적용
+        document.querySelectorAll('.data-table td').forEach(cell => {
             cell.style.height = newHeight;
-            cell.style.lineHeight = '100%';
+            cell.style.lineHeight = '100%'; 
         });
         
-        const styleId = 'dynamic-row-height';
-        let style = document.getElementById(styleId);
-        if (!style) {
-            style = document.createElement('style');
-            style.id = styleId;
-            document.head.appendChild(style);
-        }
-        
-        style.textContent = `
-            .bottom-data-header td, .bottom-data-row td {
-                height: ${newHeight} !important;
-                line-height: 100% !important;
-                padding-top: 0px !important;
-                padding-bottom: 0px !important;
-            }
-            .bottom-data-header, .bottom-data-row {
-                height: ${newHeight} !important;
-            }
-        `;
+        // 3. index.html의 style 블록에 있는 강제 축소 규칙을 덮어쓰기 위해 동적 스타일 적용
+        applyCustomHeightStyle(newHeight);
         
         saveSettings(); // 🚀 높이 변경 후 저장
     });
