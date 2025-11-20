@@ -1,422 +1,392 @@
-// ==========================================================
-// 전역 변수 및 헬퍼 함수
-// ==========================================================
+// =======================================================
+// Global Variables for State Management
+// =======================================================
+let selectedCells = [];
+let isMouseDown = false;
+let startCell = null;
+let currentCell = null;
 
-let currentActiveCells = []; // 현재 활성 셀 그룹 (Shift+클릭으로 선택된 셀)
-let currentColorTarget = 'text'; // 색상 적용 대상
+// =======================================================
+// Utility Functions
+// =======================================================
 
-// 열 크기 조절 변수
-let isColResizing = false; 
-let currentColResizer = null; 
+/**
+ * Creates and appends color palette buttons to the setting panel.
+ */
+function createColorPalette() {
+    const palette = document.querySelector('.color-palette');
+    const colors = [
+        '#FFFFFF', '#C0C0C0', '#808080', '#404040', '#000000',
+        '#FF0000', '#FF8080', '#FFC000', '#FFFF00', '#80FF00',
+        '#00FF00', '#00FF80', '#00FFFF', '#0080FF', '#0000FF',
+        '#8000FF', '#FF00FF', '#FF0080', '#800000', '#FF8000',
+        '#808000', '#008000', '#008080', '#000080', '#800080',
+        '#C0D9D9', '#E6C3E6', '#F7B7B7', '#D4F4FA', '#FFF0B5',
+        '#D0D0FF', '#FFA07A', '#98FB98', '#B0E0E6', '#FAFAD2',
+        '#696969', '#A9A9A9', '#D3D3D3', '#F5F5F5', '#191970'
+    ];
 
-// 행 높이 조절 변수
-let isRowResizing = false;
-let currentRowResizer = null;
-let startY;
-let startHeight;
-
-// ==========================================================
-// 유틸리티 및 데이터 관리
-// ==========================================================
-
-function getCellId(cell) {
-    // 모든 셀에 대해 고유 ID 생성 (행 인덱스 + 열 인덱스)
-    const row = cell.closest('tr');
-    // rowIndex를 사용하여 고유성 확보
-    const rowIndex = Array.from(row.parentNode.children).indexOf(row); 
-    const colIndex = cell.cellIndex;
-    return `cell-${rowIndex}-${colIndex}`;
+    colors.forEach(color => {
+        const button = document.createElement('button');
+        button.className = 'color-btn';
+        button.style.backgroundColor = color;
+        button.dataset.color = color;
+        button.addEventListener('click', applyColor);
+        palette.appendChild(button);
+    });
 }
 
-function saveCellCustomStyle(cell, type, value) {
-    const id = getCellId(cell);
-    let styles = JSON.parse(localStorage.getItem('customCellStyles') || '{}');
+/**
+ * Downloads the specified HTML element as a PNG image.
+ * @param {string} elementId - The ID of the element to capture.
+ * @param {string} fileName - The name of the downloaded file.
+ */
+function downloadImage(elementId, fileName) {
+    const element = document.getElementById(elementId);
     
-    if (!styles[id]) {
-        styles[id] = {};
-    }
-    styles[id][type] = value; 
-    
-    localStorage.setItem('customCellStyles', JSON.stringify(styles));
-}
+    // 선택된 셀 스타일을 잠시 제거 (캡처 시 선택 표시를 없애기 위함)
+    selectedCells.forEach(cell => cell.classList.remove('selected'));
 
-function loadCustomCellStyles() {
-    const styles = JSON.parse(localStorage.getItem('customCellStyles') || '{}');
-    const allCells = document.querySelectorAll('.data-table td'); 
+    // html2canvas 설정: 캡처 영역 스크롤바 무시, 배경 투명도 유지
+    html2canvas(element, {
+        useCORS: true, 
+        backgroundColor: null, // body의 배경은 포함하지 않음
+        windowWidth: document.body.scrollWidth, // 전체 너비 캡처
+        windowHeight: document.body.scrollHeight // 전체 높이 캡처
+    }).then(canvas => {
+        const image = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.href = image;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
 
-    allCells.forEach(cell => {
-        const id = getCellId(cell);
-        if (styles[id]) {
-            cell.style.color = styles[id].color || '';
-            cell.style.backgroundColor = styles[id].backgroundColor || '';
-            cell.style.fontSize = styles[id].fontSize || '';
-        }
-        
-        // 저장된 행 높이 스타일 로드
-        if (styles[id] && styles[id].rowHeight) {
-            cell.closest('tr').style.height = styles[id].rowHeight;
-        }
-
-        if (!cell.hasAttribute('contenteditable')) {
-            cell.setAttribute('contenteditable', 'true'); 
-        }
-        
-        // 🌟 모든 셀에 클릭 리스너 재부착 (다중 편집 활성화) 🌟
-        cell.removeEventListener('click', handleCellClick);
-        cell.addEventListener('click', handleCellClick);
+        // 캡처 후 선택된 셀 스타일을 다시 적용
+        selectedCells.forEach(cell => cell.classList.add('selected'));
+        alert('테이블 캡처가 완료되었습니다! (배경 이미지는 포함되지 않습니다)');
     });
 }
 
 
-// ==========================================================
-// 행 높이 조절 (Row Resizing) 로직
-// ==========================================================
+// =======================================================
+// Cell Selection Logic (Ctrl/Shift/Mouse)
+// =======================================================
 
-function setupRowResizing() {
-    const table = document.querySelector('.data-table');
-    table.addEventListener('mousedown', startRowResize);
+/**
+ * Handles cell selection based on user click (single, shift, or ctrl/cmd).
+ * @param {Event} e - The mouse event.
+ */
+function handleCellMouseDown(e) {
+    const cell = e.currentTarget;
+    startCell = cell;
+    isMouseDown = true;
+    
+    // Prevent dragging from starting contenteditable mode
+    e.preventDefault(); 
+    
+    // Shift-click for multiple selection
+    if (e.shiftKey) {
+        if (selectedCells.length === 0) {
+             toggleCellSelection(cell);
+        } else {
+            // Select range from the first selected cell to the current cell
+            selectCellRange(selectedCells[0], cell);
+        }
+    } 
+    // Single click (replaces current selection)
+    else {
+        clearSelection();
+        toggleCellSelection(cell);
+    }
+
+    // Set a global mouse move listener for dragging selection
+    document.addEventListener('mousemove', handleCellMouseMove);
+    document.addEventListener('mouseup', handleCellMouseUp);
 }
 
-function startRowResize(e) {
-    // 행 높이 조절은 셀의 하단 5px 이내에서만 작동
+/**
+ * Clears the current cell selection.
+ */
+function clearSelection() {
+    selectedCells.forEach(cell => {
+        cell.classList.remove('selected');
+    });
+    selectedCells = [];
+}
+
+/**
+ * Toggles the selection state of a single cell.
+ * @param {HTMLElement} cell - The cell to toggle.
+ */
+function toggleCellSelection(cell) {
+    if (cell.classList.contains('selected')) {
+        cell.classList.remove('selected');
+        selectedCells = selectedCells.filter(c => c !== cell);
+    } else {
+        cell.classList.add('selected');
+        selectedCells.push(cell);
+    }
+}
+
+/**
+ * Handles mouse movement for drag-selection.
+ * @param {Event} e - The mouse event.
+ */
+function handleCellMouseMove(e) {
+    if (!isMouseDown) return;
+    
     const targetCell = e.target.closest('td');
-    // colspan을 가진 셀 (공지사항/제목)도 조절 가능하게 수정
-    if (!targetCell || e.buttons !== 1) return; 
+    if (!targetCell || targetCell === currentCell) return;
     
-    const rect = targetCell.getBoundingClientRect();
-    const isBottomEdge = rect.bottom - e.clientY < 5;
-
-    if (isBottomEdge) {
-        isColResizing = false; 
-        isRowResizing = true;
-        currentRowResizer = targetCell.closest('tr');
-        startY = e.clientY;
-        startHeight = currentRowResizer.offsetHeight;
-        document.body.style.cursor = 'row-resize';
-        e.preventDefault(); 
-        
-        document.addEventListener('mousemove', resizeRow);
-        document.addEventListener('mouseup', stopRowResize);
-    }
+    currentCell = targetCell;
+    selectCellRange(startCell, currentCell);
 }
 
-function resizeRow(e) {
-    if (!isRowResizing || !currentRowResizer) return;
-    
-    const newHeight = startHeight + (e.clientY - startY);
-    const minHeight = 15;
-
-    if (newHeight >= minHeight) {
-        currentRowResizer.style.height = newHeight + 'px';
-        
-        // 해당 행의 모든 셀에 높이 스타일 저장
-        currentRowResizer.querySelectorAll('td').forEach(cell => {
-             saveCellCustomStyle(cell, 'rowHeight', newHeight + 'px');
-        });
-    }
+/**
+ * Handles mouse up event, finalizing drag-selection.
+ */
+function handleCellMouseUp() {
+    isMouseDown = false;
+    startCell = null;
+    currentCell = null;
+    document.removeEventListener('mousemove', handleCellMouseMove);
+    document.removeEventListener('mouseup', handleCellMouseUp);
 }
 
-function stopRowResize() {
-    isRowResizing = false;
-    currentRowResizer = null;
-    document.body.style.cursor = 'default';
-    
-    document.removeEventListener('mousemove', resizeRow);
-    document.removeEventListener('mouseup', stopRowResize);
-}
-
-// ==========================================================
-// 열 크기 조절 (Column Resizing) 로직
-// ==========================================================
-
-function setupColumnResizing() {
+/**
+ * Selects all cells within a rectangular range defined by two corner cells.
+ * @param {HTMLElement} cellA - The first corner cell.
+ * @param {HTMLElement} cellB - The second corner cell.
+ */
+function selectCellRange(cellA, cellB) {
     const table = document.querySelector('.data-table');
-    if (!table) return;
+    const cells = Array.from(table.querySelectorAll('td[contenteditable="true"]'));
+    if (cells.length === 0) return;
 
-    // 모든 열 헤더 행에 클래스를 추가
-    const headerRows = table.querySelectorAll('.top-data-header, .bottom-data-header'); 
+    const allRows = Array.from(table.querySelectorAll('tr'));
     
-    headerRows.forEach(row => {
-        row.querySelectorAll('td').forEach((header, index, list) => {
-            if (index < list.length - 1) {
-                header.classList.add('resizable-col');
+    const getCoords = (cell) => {
+        const row = cell.closest('tr');
+        if (!row) return null;
+        return {
+            row: allRows.indexOf(row),
+            col: Array.from(row.querySelectorAll('td')).indexOf(cell)
+        };
+    };
+
+    const coordA = getCoords(cellA);
+    const coordB = getCoords(cellB);
+    
+    if (!coordA || !coordB) return;
+
+    const startRow = Math.min(coordA.row, coordB.row);
+    const endRow = Math.max(coordA.row, coordB.row);
+    const startCol = Math.min(coordA.col, coordB.col);
+    const endCol = Math.max(coordA.col, coordB.col);
+
+    clearSelection();
+
+    for (let r = startRow; r <= endRow; r++) {
+        const row = allRows[r];
+        const rowCells = Array.from(row.querySelectorAll('td'));
+        for (let c = startCol; c <= endCol; c++) {
+            if (c < rowCells.length) {
+                const cell = rowCells[c];
+                if (cell.getAttribute('contenteditable') === 'true') {
+                    cell.classList.add('selected');
+                    selectedCells.push(cell);
+                }
             }
-        });
-    });
-
-    table.addEventListener('mousedown', startColResize);
-    document.addEventListener('mouseup', stopColResize);
-}
-
-function startColResize(e) {
-    if (isRowResizing) return; 
-    
-    const targetCell = e.target.closest('.resizable-col');
-    if (!targetCell || e.buttons !== 1) return;
-
-    const rect = targetCell.getBoundingClientRect();
-    const isEdge = rect.right - e.clientX < 5;
-
-    if (isEdge) {
-        isColResizing = true;
-        currentColResizer = targetCell;
-        document.body.style.cursor = 'col-resize';
-        e.preventDefault(); 
-        document.addEventListener('mousemove', resizeCol); 
+        }
     }
 }
 
-function resizeCol(e) {
-    if (!isColResizing || !currentColResizer) return;
+// =======================================================
+// Style Application Logic
+// =======================================================
+
+/**
+ * Applies the selected color to the selected cells (text or background).
+ * @param {Event} e - The click event from the color button.
+ */
+function applyColor(e) {
+    if (selectedCells.length === 0) {
+        alert('먼저 색상을 적용할 셀을 Shift + 클릭으로 선택해 주세요.');
+        return;
+    }
+
+    const color = e.currentTarget.dataset.color;
+    const target = document.querySelector('input[name="colorTarget"]:checked').value;
+
+    selectedCells.forEach(cell => {
+        if (target === 'text') {
+            cell.style.color = color;
+        } else if (target === 'background') {
+            cell.style.backgroundColor = color;
+        }
+    });
+}
+
+/**
+ * Applies the specified font size to the selected cells.
+ */
+function applyFontSize() {
+    if (selectedCells.length === 0) {
+        alert('먼저 글꼴 크기를 변경할 셀을 Shift + 클릭으로 선택해 주세요.');
+        return;
+    }
+
+    const fontSize = document.getElementById('fontSizeInput').value;
+    if (fontSize < 8 || fontSize > 48 || isNaN(fontSize)) {
+        alert('글꼴 크기는 8px에서 48px 사이의 값으로 입력해주세요.');
+        return;
+    }
+
+    selectedCells.forEach(cell => {
+        cell.style.fontSize = `${fontSize}px`;
+    });
+}
+
+// =======================================================
+// Resizing Logic (Column & Row)
+// =======================================================
+
+let resizeTarget = null;
+let resizeType = null; // 'col' or 'row'
+let startX = 0;
+let startY = 0;
+let startWidth = 0;
+let startHeight = 0;
+
+/**
+ * Starts the column or row resizing process.
+ * @param {Event} e - The mouse event.
+ */
+function startResize(e) {
+    resizeTarget = e.target.closest('td');
     
-    const table = document.querySelector('.data-table');
-    const minWidth = 30;
+    // Determine if it's a column or row resize based on class and proximity
+    // We only allow resizing on column headers and data rows, not the top/middle rows.
+    if (!resizeTarget) return;
 
-    const colIndex = currentColResizer.cellIndex;
-    const allCellsInRow = currentColResizer.closest('tr').querySelectorAll('td');
-    const nextCell = allCellsInRow[colIndex + 1];
-
-    if (nextCell) {
-        const currentWidth = currentColResizer.offsetWidth;
-        const nextWidth = nextCell.offsetWidth;
-        const delta = e.movementX; 
+    // Col Resize: Check for class indicating the right border
+    if (e.target.classList.contains('col-resizer')) {
+        resizeType = 'col';
+        startX = e.clientX;
+        startWidth = resizeTarget.offsetWidth;
+        // Prevent default text selection
+        e.preventDefault(); 
         
-        const proposedCurrentWidth = currentWidth + delta;
-        const proposedNextWidth = nextWidth - delta;
+        document.addEventListener('mousemove', doResize);
+        document.addEventListener('mouseup', stopResize);
+    } 
+    // Row Resize: Check for class indicating the bottom border
+    else if (e.target.classList.contains('row-resizer')) {
+        resizeType = 'row';
+        startY = e.clientY;
+        startHeight = resizeTarget.offsetHeight;
+        // Prevent default text selection
+        e.preventDefault(); 
+        
+        document.addEventListener('mousemove', doResize);
+        document.addEventListener('mouseup', stopResize);
+    }
+}
 
-        if (proposedCurrentWidth >= minWidth && proposedNextWidth >= minWidth) {
+/**
+ * Performs the resizing action on mouse move.
+ * @param {Event} e - The mouse event.
+ */
+function doResize(e) {
+    if (!resizeTarget) return;
+
+    if (resizeType === 'col') {
+        const newWidth = startWidth + (e.clientX - startX);
+        if (newWidth > 30) { // Minimum width constraint
+            resizeTarget.style.width = `${newWidth}px`;
+            // Apply width to the whole column by targeting all cells in that column's index
+            const colIndex = Array.from(resizeTarget.parentNode.children).indexOf(resizeTarget);
+            const table = resizeTarget.closest('table');
+            const rows = table.querySelectorAll('tr');
             
-            // 모든 5열 행에 너비 적용
-            table.querySelectorAll('tr').forEach(row => {
-                const cells = row.querySelectorAll('td');
-                if (cells.length === 5) { 
-                    cells[colIndex].style.width = proposedCurrentWidth + 'px';
-                    cells[colIndex].style.minWidth = proposedCurrentWidth + 'px';
-                    cells[colIndex + 1].style.width = proposedNextWidth + 'px';
-                    cells[colIndex + 1].style.minWidth = proposedNextWidth + 'px';
+            // Apply width to the data cells (not headers, since the resizer is on header)
+            rows.forEach(row => {
+                const cell = row.children[colIndex];
+                if (cell && row.classList.contains('top-data-header')) {
+                    cell.style.width = `${newWidth}px`;
+                }
+            });
+        }
+    } else if (resizeType === 'row') {
+        const newHeight = startHeight + (e.clientY - startY);
+        if (newHeight > 15) { // Minimum height constraint
+            resizeTarget.style.height = `${newHeight}px`;
+            // Apply height to all cells in the row
+            Array.from(resizeTarget.parentNode.children).forEach(cell => {
+                if (cell !== resizeTarget) {
+                    cell.style.height = `${newHeight}px`;
                 }
             });
         }
     }
 }
 
-function stopColResize() {
-    if (isColResizing) {
-        isColResizing = false;
-        currentColResizer = null;
-        document.body.style.cursor = 'default';
-        document.removeEventListener('mousemove', resizeCol);
+/**
+ * Stops the resizing process.
+ */
+function stopResize() {
+    resizeTarget = null;
+    resizeType = null;
+    document.removeEventListener('mousemove', doResize);
+    document.removeEventListener('mouseup', stopResize);
+}
+
+
+// =======================================================
+// Initialization (DOM Ready)
+// =======================================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. 셀 선택 이벤트 리스너 추가
+    document.querySelectorAll('.data-table td[contenteditable="true"]').forEach(cell => {
+        // Prevent default right-click behavior from interfering with selection
+        cell.addEventListener('contextmenu', e => e.stopPropagation());
+        cell.addEventListener('mousedown', handleCellMouseDown);
+    });
+
+    // 2. 글꼴 크기 적용 버튼 리스너
+    const applyFontSizeBtn = document.getElementById('applyFontSizeBtn');
+    if (applyFontSizeBtn) {
+        applyFontSizeBtn.addEventListener('click', applyFontSize);
     }
-}
 
-// ==========================================================
-// 다중 셀 편집 및 행 조절 (핵심 기능)
-// ==========================================================
+    // 3. 색상 팔레트 생성
+    createColorPalette();
 
-function applyColorToActiveTarget(color) {
-    if (currentActiveCells.length === 0) return;
-    const styleProp = currentColorTarget === 'text' ? 'color' : 'backgroundColor';
-    currentActiveCells.forEach(cell => {
-        cell.style[styleProp] = color;
-        saveCellCustomStyle(cell, styleProp, color);
+    // 4. 리사이저 요소 생성 및 이벤트 리스너 추가
+    document.querySelectorAll('.data-table td').forEach(cell => {
+        
+        // 열(Column) 리사이저 (td의 오른쪽 경계선)
+        const colResizer = document.createElement('div');
+        colResizer.className = 'col-resizer';
+        cell.appendChild(colResizer);
+        
+        // 행(Row) 리사이저 (td의 아래쪽 경계선)
+        const rowResizer = document.createElement('div');
+        rowResizer.className = 'row-resizer';
+        cell.appendChild(rowResizer);
+
+        // 리사이즈 이벤트 리스너
+        colResizer.addEventListener('mousedown', startResize);
+        rowResizer.addEventListener('mousedown', startResize);
     });
-}
 
-function applyFontSizeToActiveCells(size) {
-    if (currentActiveCells.length === 0) return;
-    currentActiveCells.forEach(cell => {
-        cell.style.fontSize = size + 'px'; 
-        saveCellCustomStyle(cell, 'fontSize', size + 'px');
-    });
-}
-
-function handleCellClick(event) {
-    // 🌟 이 부분이 다중 편집 기능의 핵심입니다. 🌟
-    if (isColResizing || isRowResizing) return; 
-
-    const cell = event.currentTarget;
-
-    if (event.shiftKey) {
-        // Shift 키를 누르면 추가/제거 (다중 선택)
-        if (cell.classList.contains('active-cell')) {
-            cell.classList.remove('active-cell');
-            currentActiveCells = currentActiveCells.filter(c => c !== cell);
-        } else {
-            cell.classList.add('active-cell');
-            currentActiveCells.push(cell);
+    // 5. 테이블 외부 클릭 시 선택 해제
+    document.addEventListener('click', (e) => {
+        // 클릭된 요소가 설정 패널, 테이블 내부, 또는 색상 버튼이 아닌 경우에만 해제
+        if (!e.target.closest('.setting-panel') && !e.target.closest('.data-table')) {
+            clearSelection();
         }
-    } else {
-        // Shift 키를 누르지 않으면 단일 선택
-        currentActiveCells.forEach(c => c.classList.remove('active-cell'));
-        currentActiveCells = [];
-        cell.classList.add('active-cell');
-        currentActiveCells.push(cell);
-    }
-}
-
-// 🌟 행 추가 로직 수정 (작동 오류 해결) 🌟
-function addRow() {
-    const tableBody = document.querySelector('.data-table tbody');
-    // 복제할 기준 행: 마지막 top-data-row
-    const lastRow = tableBody.querySelector('.top-data-row:last-of-type');
-    
-    if (!lastRow) {
-        alert("데이터 행이 최소 하나는 필요합니다.");
-        return;
-    }
-
-    // cloneNode(true)를 사용하여 모든 자식 노드를 복제
-    const newRow = lastRow.cloneNode(true); 
-    newRow.removeAttribute('style'); 
-    
-    const headerCells = document.querySelector('.top-data-header').querySelectorAll('td');
-
-    newRow.querySelectorAll('td').forEach((cell, index) => {
-        cell.textContent = ''; // 내용 비우기
-        cell.removeAttribute('style'); // 기존 스타일 제거
-        cell.classList.remove('active-cell');
-        
-        // 너비 스타일 적용
-        if (headerCells[index] && headerCells[index].style.width) {
-            cell.style.width = headerCells[index].style.width;
-            cell.style.minWidth = headerCells[index].style.minWidth;
-        }
-
-        // 🌟 새로 생성된 셀에 클릭 이벤트 리스너 재부착 🌟
-        cell.removeEventListener('click', handleCellClick);
-        cell.addEventListener('click', handleCellClick);
-    });
-
-    // middle-title-row 바로 위에 새 행을 삽입
-    const middleTitleRow = tableBody.querySelector('.middle-title-row');
-    if (middleTitleRow) {
-        tableBody.insertBefore(newRow, middleTitleRow);
-    } else {
-        tableBody.appendChild(newRow); 
-    }
-    alert("새로운 데이터 행이 추가되었습니다.");
-}
-
-// 🌟 행 삭제 로직 수정 (작동 오류 해결) 🌟
-function deleteRow() {
-    const tableBody = document.querySelector('.data-table tbody');
-    const allTopRows = tableBody.querySelectorAll('.top-data-row');
-    
-    if (allTopRows.length > 1) { 
-        const rowToDelete = allTopRows[allTopRows.length - 1]; 
-
-        // 로컬 스토리지 스타일 제거
-        rowToDelete.querySelectorAll('td').forEach(cell => {
-            let styles = JSON.parse(localStorage.getItem('customCellStyles') || '{}');
-            delete styles[getCellId(cell)];
-            localStorage.setItem('customCellStyles', JSON.stringify(styles));
-        });
-
-        rowToDelete.remove();
-        alert("마지막 데이터 행이 삭제되었습니다.");
-        // 활성 셀 목록에서 삭제된 셀 제거
-        currentActiveCells = currentActiveCells.filter(cell => !rowToDelete.contains(cell));
-        
-    } else {
-        alert("최소 하나의 데이터 행은 유지해야 합니다.");
-    }
-}
-
-// 캡처 함수 (이전과 동일)
-function downloadImage(elementId, fileName) {
-    const captureElement = document.getElementById(elementId);
-    
-    currentActiveCells.forEach(cell => cell.classList.remove('active-cell'));
-
-    const button = document.querySelector('.download-button');
-    const originalText = button.textContent;
-    button.textContent = '이미지 생성 중... 잠시만 기다려주세요.';
-    button.disabled = true;
-
-    html2canvas(captureElement, {
-        scale: 2, 
-        allowTaint: true,
-        useCORS: true
-    }).then(canvas => {
-        const image = canvas.toDataURL('image/png');
-
-        const a = document.createElement('a');
-        a.href = image;
-        a.download = fileName;
-        
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-
-        button.textContent = originalText;
-        button.disabled = false;
-        
-        currentActiveCells.forEach(cell => cell.classList.add('active-cell'));
-
-    }).catch(error => {
-        console.error('이미지 생성 중 오류 발생:', error);
-        button.textContent = '❌ 오류 발생 (콘솔 확인)';
-        button.disabled = false;
-        currentActiveCells.forEach(cell => cell.classList.add('active-cell'));
-        alert('이미지 생성에 실패했습니다.');
-    });
-}
-
-
-// ==========================================================
-// 초기화 및 DOM 로드
-// ==========================================================
-
-document.addEventListener("DOMContentLoaded", () => {
-    window.downloadImage = downloadImage; 
-
-    // 1. 셀 스타일 로드 및 contenteditable 설정 (다중 편집 기능 활성화됨)
-    loadCustomCellStyles();
-
-    // 2. 열/행 크기 조절 기능 설정
-    setupColumnResizing();
-    setupRowResizing(); 
-
-    // 3. 색상 팔레트 초기화
-    const colorPaletteElement = document.querySelector(".color-palette");
-    const presetColors = [
-        '#FF0000', '#0000FF', '#008000', '#FFFF00', '#FFA500', 
-        '#800080', '#00FFFF', '#FFC0CB', '#FFFFFF', '#000000', 
-        '#808080', '#A52A2A', '#00FF00', '#FFD700', '#FF4500',
-        '#9932CC', '#4682B4', '#DAA520', '#2F4F4F', '#1B5E20', 
-        '#7FFFD4', '#F08080', '#DDA0DD', '#7B68EE', '#B0C4DE', 
-        '#D2B48C', '#E6E6FA', '#FFFACD', '#8B0000', '#4B0082', 
-        '#228B22', '#CD853F', '#F0E68C', '#ADD8E6', '#FF6347', 
-        '#9ACD32', '#6495ED', '#D8BFD8', '#BA55D3', '#00CED1'  
-    ];
-    
-    presetColors.forEach(color => {
-        const swatch = document.createElement('div');
-        swatch.className = 'color-swatch';
-        swatch.style.backgroundColor = color;
-        
-        swatch.addEventListener('click', () => {
-            applyColorToActiveTarget(color);
-        });
-        colorPaletteElement.appendChild(swatch);
-    });
-
-    // 4. 이벤트 리스너 설정
-    document.getElementsByName('colorTarget').forEach(radio => {
-        radio.addEventListener('change', (e) => { currentColorTarget = e.target.value; });
-    });
-    document.getElementById('applyFontSizeBtn').addEventListener('click', () => {
-        const size = document.getElementById('fontSizeInput').value;
-        if (size) { applyFontSizeToActiveCells(parseInt(size)); }
-    });
-    // 🌟 버튼 리스너 재설정 🌟
-    document.getElementById('addRowBtn').addEventListener('click', addRow);
-    document.getElementById('deleteRowBtn').addEventListener('click', deleteRow);
-    
-    document.querySelectorAll(".left-item").forEach(item => {
-        item.addEventListener("click", () => {
-            document.querySelector(".left-item.active")?.classList.remove("active");
-            item.classList.add("active");
-        });
     });
 });
