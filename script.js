@@ -1,136 +1,166 @@
-document.addEventListener("DOMContentLoaded", () => {
-    // ----------------------------------------------------
-    // 1. 설정 저장 및 불러오기 로직 정의
-    // ----------------------------------------------------
-
-    // 헬퍼: 안전하게 CSS 변수 설정
-    function setVar(name, value) {
-        document.documentElement.style.setProperty(name, value);
-    }
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>실시간 데이터 현황 - 노블레스 통합 매니지먼트</title>
+    <link rel="stylesheet" href="style.css"> 
     
-    // 헬퍼: 로컬 스토리지에 설정 저장 (자동 저장)
-    function saveSetting(key, value) {
-        if (value) {
-            localStorage.setItem(key, value);
-        }
-    }
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+</head>
+<body>
 
-    // 헬퍼: 로컬 스토리지에서 설정 불러오기 및 적용
-    function loadSettings() {
-        // CSS 변수명과 HTML 입력 필드 ID 매핑
-        const settings = {
-            '--table-header-bg': "headerBgColor",
-            '--table-header-text': "headerTextColor",
-            '--table-row-bg': "rowBgColor",
-            '--table-row-text': "rowTextColor",
-            '--col-num-text-color': "colNumTextColor",
-        };
-
-        // 1. 색상 설정 불러오기
-        for (const cssVar in settings) {
-            const inputId = settings[cssVar];
-            const storedValue = localStorage.getItem(inputId);
-            const inputElement = document.getElementById(inputId);
-
-            if (storedValue) {
-                setVar(cssVar, storedValue);
-                if (inputElement) {
-                    inputElement.value = storedValue;
-                }
-            }
-        }
+<div class="setting-panel">
+    <div class="color-control">
+        <h3>🎨 테이블 스타일 설정</h3>
         
-        // 2. ★ 추가: 글자 크기 설정 불러오기 ★
-        const fontSizeInput = document.getElementById("fontSizeInput");
-        const storedFontSize = localStorage.getItem("tableFontSize");
-        if (storedFontSize) {
-            setVar('--table-font-size', storedFontSize + 'px');
-            if (fontSizeInput) {
-                fontSizeInput.value = storedFontSize;
-            }
-        }
-    }
+        <div class="color-palette-container">
+            <div class="color-palette">
+            </div>
+            <div class="color-panel">
+                <label for="headerBgColor">헤더 배경</label>
+                <input type="color" id="headerBgColor" value="#2196F3">
+            </div>
+            <div class="color-panel">
+                <label for="headerTextColor">헤더 글자</label>
+                <input type="color" id="headerTextColor" value="#ffffff">
+            </div>
+            <div class="color-panel">
+                <label for="rowBgColor">데이터 행 배경</label>
+                <input type="color" id="rowBgColor" value="#1B5E20">
+            </div>
+            <div class="color-panel">
+                <label for="rowTextColor">데이터 행 글자</label>
+                <input type="color" id="rowTextColor" value="#C8F7DC">
+            </div>
+            <div class="color-panel">
+                <label for="colNumTextColor">코드/금액 강조색</label>
+                <input type="color" id="colNumTextColor" value="#FF0000">
+            </div>
+        </div>
+    </div>
     
-    // 페이지 로드 시 설정 불러오기
-    loadSettings();
+    <button class="download-button" onclick="downloadImage()">
+        🖼️ 테이블 영역 이미지 다운로드 (PNG)
+    </button>
+</div>
 
-    // ----------------------------------------------------
-    // 2. 초기화 및 이벤트 리스너 설정
-    // ----------------------------------------------------
+<div class="wrap" id="capture-area"> 
 
-    // 왼쪽 메뉴 active 토글
-    const leftItems = document.querySelectorAll(".left-item");
-    leftItems.forEach(item => {
-        item.addEventListener("click", () => {
-            document.querySelector(".left-item.active")?.classList.remove("active");
-            item.classList.add("active");
-        });
-    });
+    <div class="top-menu">
+        <div class="menu">블레스 전국 프레스티지 서비스</div>
+        <div class="menu">VIP 회원 전용 통합 매니지먼트</div>
+        <div class="menu">노블레스 회원 전용룸</div>
+    </div>
 
-    // 컬러 및 사이즈 입력 요소 ID 매칭
-    const headerBg = document.getElementById("headerBgColor");
-    const headerText = document.getElementById("headerTextColor");
-    const rowBg = document.getElementById("rowBgColor");
-    const rowText = document.getElementById("rowTextColor");
-    const colNumText = document.getElementById("colNumTextColor");
-    const fontSizeInput = document.getElementById("fontSizeInput"); // ★ 추가 ★
-    
+    <div class="left-menu">
+        <div class="left-item active">메인 화면</div>
+        <div class="left-item">[매칭/고객 상태]</div>
+        <div class="left-item">주문 상태</div>
+        <div class="left-item">인증 상태</div>
+        <div class="left-item">[상담/문의]</div>
+        <div class="left-item">직무 문의</div>
+        <div class="left-item">전국 만남</div>
+        <div class="left-item">[관리/데이터]</div>
+        <div class="left-item">실시간 데이터</div>
+        <div class="left-item">실시간 오류</div>
+        <div class="left-item">데이터 분석</div>
+        <div class="left-item">포인트 조회</div>
+        <div class="left-item">유흥 관리</div>
+        <div class="left-item">회원 관리</div>
+        <div class="left-item">회원 승인</div>
+        <div class="left-item">회원 탈퇴</div>
+        <div class="left-item">담당 실장</div>
+    </div>
 
-    // ★ 컬러 팔레트 로직 ★
-    const colorPaletteElement = document.querySelector(".color-palette");
-    const presetColors = [
-        '#FF0000', '#0000FF', '#008000', '#FFFF00', '#FFA500', 
-        '#800080', '#00FFFF', '#FFC0CB', '#FFFFFF', '#000000', 
-        '#808080', '#A52A2A', '#00FF00', '#FFD700', '#FF4500',
-        '#9932CC', '#4682B4', '#DAA520', '#2F4F4F', '#1B5E20'
-    ];
-    let activeColorInput = headerBg;
+    <table class="data-table">
+        <tbody>
+            <tr class="top-notice-row">
+                <td colspan="5" contenteditable="true"> 
+                    <span class="top-notice-mark">DAMAGE!</span> 주의사항 4단계에서 일치 파트너십으로 통합된 유형만을 선택하여 공유 임무를 완료하며 함께 할때의 금일 결제 금액 후 공동 이익을 마감해야 합니다!
+                </td>
+            </tr>
+            
+            <tr class="top-data-header">
+                <td>회원ID</td>
+                <td>주문상태</td>
+                <td>인증상태</td> 
+                <td>활성화 코드</td> 
+                <td>승인된 암호 코드</td> 
+            </tr>
+            
+            <tr class="top-data-row">
+                <td contenteditable="true">jkgov1203</td>
+                <td contenteditable="true">발송 완료</td>
+                <td contenteditable="true">승인 완료</td>
+                <td contenteditable="true">NSACT2032897</td>
+                <td contenteditable="true">NBS001001001</td> 
+            </tr>
+            <tr class="top-data-row">
+                <td contenteditable="true">sxcv4752</td>
+                <td contenteditable="true">검수 대기</td>
+                <td contenteditable="true">미승인</td>
+                <td contenteditable="true">NSACT2032898</td>
+                <td contenteditable="true">NBS001001002</td> 
+            </tr>
+            <tr class="top-data-row">
+                <td contenteditable="true">qwerty24689</td>
+                <td contenteditable="true">진행 중</td>
+                <td contenteditable="true">승인 완료</td>
+                <td contenteditable="true">NSACT2032899</td>
+                <td contenteditable="true">NBS001001003</td> 
+            </tr>
+            <tr class="top-data-row">
+                <td contenteditable="true">xsgf1575</td>
+                <td contenteditable="true">발송 오류</td>
+                <td contenteditable="true">비활성화</td>
+                <td contenteditable="true">NSACT2032891</td>
+                <td contenteditable="true">NBS001001004</td> 
+            </tr>
+            
+            <tr class="middle-title-row">
+                <td colspan="5" contenteditable="true"> 
+                    데이터 오류처리
+                </td>
+            </tr>
+            
+            <tr class="middle-notice-row">
+                <td colspan="5" contenteditable="true"> 
+                    1. 위 공동구매 회원들이 클리어 데이터를 지시에 따라 진행하지 못하여 실패로 인해 회원가입 및 계정 비활성화되어 출금불가 <br>
+                    2. 상호협력의 발전목적을 실천하기 위해 공식적으로 1~2회 연속 클리어수정을 특별히 승인하였으며, 수정주문은 만장일치로 합의되어야 합니다.<br>
+                    3. 수정주문은 계좌와 계좌 이상 데이터 복구 후 출금 코드를 매니저 갱신을 완료해야 출금가능하며 데이터 완료 이전에는 현금 출금이 불가능합니다<br>
+                    4.정산시스템에서 승인할 수 없어 출금할수 없게 되었습니다. 데이터 완료 이전에는 현금 출금이 불가능합니다.<br>
+                    (예: 부활 포기한 계정의 경우 포인트출금 불가)
+                </td>
+            </tr>
 
-    // 1. 색상 버튼 생성 및 추가
-    presetColors.forEach(color => {
-        const swatch = document.createElement('div');
-        swatch.className = 'color-swatch';
-        swatch.style.backgroundColor = color;
-        swatch.dataset.color = color;
-        
-        swatch.addEventListener('click', () => {
-            if (activeColorInput) {
-                const event = new Event('input', { bubbles: true });
-                activeColorInput.value = color; 
-                activeColorInput.dispatchEvent(event); 
-            }
-        });
-        colorPaletteElement.appendChild(swatch);
-    });
+            <tr class="bottom-data-header">
+                <td class="w-20">주문유형</td>
+                <td class="w-20">주문상세</td>
+                <td class="w-20">투자금액 (원)</td>
+                <td class="w-20">원금+수익금액</td>
+                <td class="w-20">보장비율</td>
+            </tr>
 
-    // 2. 모든 컬러 입력 필드에 'focus' 이벤트 리스너 추가
-    const colorInputs = document.querySelectorAll('.color-panel input[type="color"]');
-    colorInputs.forEach(input => {
-        input.addEventListener('focus', () => {
-            activeColorInput = input;
-        });
-        input.parentElement.addEventListener('click', () => {
-            input.focus();
-        });
-    });
+            <tr class="bottom-data-row">
+                <td contenteditable="true">A</td>
+                <td contenteditable="true">[2종택1]</td>
+                <td contenteditable="true" class="red-text">1,500,000</td>
+                <td contenteditable="true">1,650,000</td>
+                <td contenteditable="true" class="red-text">0%</td>
+            </tr>
+            <tr class="bottom-data-row">
+                <td contenteditable="true">B</td>
+                <td contenteditable="true">[2종택1]</td>
+                <td contenteditable="true">2,500,000</td>
+                <td contenteditable="true">2,750,000</td>
+                <td contenteditable="true" class="red-text">100%</td>
+            </tr>
 
-    // --- 이벤트 리스너 설정 (저장 로직 통합) ---
-    
-    // 1. 테이블 색상 변경 이벤트 리스너
-    if (headerBg) headerBg.addEventListener("input", e => { setVar('--table-header-bg', e.target.value); saveSetting('headerBgColor', e.target.value); });
-    if (headerText) headerText.addEventListener("input", e => { setVar('--table-header-text', e.target.value); saveSetting('headerTextColor', e.target.value); });
-    if (rowBg) rowBg.addEventListener("input", e => { setVar('--table-row-bg', e.target.value); saveSetting('rowBgColor', e.target.value); });
-    if (rowText) rowText.addEventListener("input", e => { setVar('--table-row-text', e.target.value); saveSetting('rowTextColor', e.target.value); });
+        </tbody>
+    </table>
 
-    // 2. 특정 셀 색상 변경 이벤트 리스너
-    if (colNumText) colNumText.addEventListener("input", e => { setVar('--col-num-text-color', e.target.value); saveSetting('colNumTextColor', e.target.value); });
-    
-    // 3. ★ 추가: 글자 크기 변경 이벤트 리스너 ★
-    if (fontSizeInput) {
-        fontSizeInput.addEventListener("input", (e) => {
-            const size = e.target.value;
-            setVar('--table-font-size', size + 'px');
-            saveSetting('tableFontSize', size);
-        });
-    }
-});
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
