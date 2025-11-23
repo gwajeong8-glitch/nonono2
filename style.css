@@ -14,13 +14,25 @@
     --col-num-text-color: var(--red-highlight); 
 }
 
-/* 래퍼 (캡처 대상 영역) */
-.wrap{
+/* 🎨 Body 및 Global Styles */
+body {
+    /* 🚀 배경 이미지 위치 조정 (200px 아래로) */
+    background: url('vip.png') no-repeat center 0px fixed; 
+    background-size: auto; 
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    color: white;
+    overflow: hidden; 
+}
+.wrap {
+    /* 래퍼 (캡처 대상 영역) */
     width:1024px;
     height:490px;
     margin:20px auto 0 auto; 
     position:relative;
     overflow: hidden;
+    background-color: transparent; 
 }
 
 /* 상단 탭 */
@@ -59,7 +71,8 @@
     font-weight:700;
     text-shadow:0 0 6px #ffdd66;
 }
-/* 표 */
+
+/* 📊 테이블 스타일 */
 .data-table{
     position:absolute;
     top:80px;
@@ -97,6 +110,11 @@
     cursor: pointer;
 }
 
+/* 호버 시 배경색 수정 */
+.data-table tr:hover td:not([style*="background-color"]){
+    background: #567d58; 
+}
+
 /* 상단 공지 통합 셀 */
 .data-table .top-notice-row td {
     background: var(--yellow-bg); 
@@ -115,7 +133,7 @@
     margin-right: 2px;
 }
 
-/* 헤더 행 */
+/* 상단 데이터 헤더 */
 .data-table .top-data-header td {
     background: var(--table-header-bg); 
     color: var(--table-header-text); 
@@ -124,7 +142,7 @@
     width: 20%; 
 }
 
-/* 데이터 행 */
+/* 상단 데이터 행 */
 .data-table .top-data-row td {
     height: 15px; 
 }
@@ -134,17 +152,7 @@
     font-weight: 700;
 }
 
-/* 중간 제목 셀 */
-.data-table .middle-title-row td {
-    background: var(--yellow-bg); 
-    color: var(--dark-text); 
-    font-size: 12px;
-    font-weight: 900;
-    padding: 6px 4px; 
-    border-bottom: 2px solid var(--table-border);
-}
-
-/* 중간 공지사항 셀 */
+/* 중간 제목/공지 셀 */
 .data-table .middle-notice-row td {
     background: var(--yellow-bg); 
     color: var(--dark-text); 
@@ -162,23 +170,34 @@
     color: var(--table-header-text); 
     font-weight: 700;
     font-size: 14px;
+    /* 💡 높이 강제 축소 규칙 (JavaScript로 높이 조절 가능하도록 !important 제거) */
+    height: 10px; 
+    padding-top: 0px; 
+    padding-bottom: 0px; 
+    line-height: 1; 
     width: 20%; 
 }
+.data-table .bottom-data-header {
+    height: 10px; 
+}
+
 
 /* 하단 데이터 행 */
 .data-table .bottom-data-row td {
     font-weight: 700;
     font-size: 14px;
+    /* 💡 높이 강제 축소 규칙 (JavaScript로 높이 조절 가능하도록 !important 제거) */
+    height: 10px; 
+    padding-top: 0px; 
+    padding-bottom: 0px; 
+    line-height: 1; 
+}
+.data-table .bottom-data-row {
+    height: 10px; 
 }
 .data-table .bottom-data-row .red-text {
     color: var(--col-num-text-color); 
 }
-
-/* 호버 시 배경색 수정 */
-.data-table tr:hover td:not([style*="background-color"]){
-    background: #567d58; 
-}
-
 
 /* --- 설정 패널 스타일 --- */
 .setting-panel{
@@ -192,7 +211,7 @@
     color: white;
     z-index: 100; 
     font-size: 12px;
-    background: rgba(0, 0, 0, 0.7); /* HTML 파일의 인라인 스타일과 동일하게 명시 */
+    background: rgba(0, 0, 0, 0.7); 
     backdrop-filter: blur(5px);
 }
 .setting-panel h3{
@@ -235,6 +254,14 @@
 .download-button:hover {
     background-color: #0056b3;
 }
+.height-apply-btn {
+    padding: 3px 8px; 
+    background: #007bff; 
+    color: white; 
+    border: none; 
+    border-radius: 3px; 
+    cursor: pointer;
+}
 
 /* --- 열/행 크기 조절 (Resizer) 스타일 --- */
 .data-table td {
@@ -261,4 +288,18 @@
     height: 5px;
     cursor: row-resize;
     z-index: 5;
+}
+
+/* 🚀 [추가] 크기 표시기 스타일 */
+.resizer-display {
+    position: fixed;
+    background: rgba(255, 255, 255, 0.9);
+    color: black;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    pointer-events: none;
+    z-index: 200;
+    opacity: 0;
+    transition: opacity 0.1s;
 }
