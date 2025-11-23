@@ -7,71 +7,6 @@
     
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     
-    <style>
-        <style>
-     body {
-            /* 🚀 배경 이미지 위치 조정 (200px 아래로) */
-            background: url('vip.png') no-repeat center 0px fixed; 
-            background-size: auto; 
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            color: white;
-            overflow: hidden; 
-        }
-
-        .wrap {
-            background-color: transparent; 
-        }
-      
-
-        .setting-panel {
-            background: rgba(0, 0, 0, 0.7); 
-            backdrop-filter: blur(5px);
-        }
-    .setting-panel {
-        /* 기존 스타일 유지 */
-        background: rgba(0, 0, 0, 0.7); 
-        backdrop-filter: blur(5px);
-    }
-        
-    /* ... 나머지 스타일은 그대로 유지 ... */
-</style>
-        /* 💡 높이 강제 축소 규칙 (JavaScript로 높이 조절 가능하도록 !important 제거) */
-        .bottom-data-header td, .bottom-data-row td {
-            height: 10px; 
-            padding-top: 0px; 
-            padding-bottom: 0px; 
-            font-size: 8px; 
-            line-height: 1; 
-        }
-        .bottom-data-header, .bottom-data-row {
-            height: 10px; 
-        }
-        
-        /* 🚀 [추가] 크기 표시기 스타일 */
-        .resizer-display {
-            position: fixed;
-            background: rgba(255, 255, 255, 0.9);
-            color: black;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 12px;
-            pointer-events: none;
-            z-index: 200;
-            opacity: 0;
-            transition: opacity 0.1s;
-        }
-        /* 📐 그룹별 높이 조절 버튼 스타일 */
-        .height-apply-btn {
-            padding: 3px 8px; 
-            background: #007bff; 
-            color: white; 
-            border: none; 
-            border-radius: 3px; 
-            cursor: pointer;
-        }
-    </style>
 </head>
 <body>
 
@@ -89,7 +24,7 @@
     <div class="color-control">
         <h3>🎨 색상 팔레트 선택 (40색)</h3>
         <div class="color-palette">
-        </div>
+            </div>
     </div>
     
     <div style="margin-top: 10px; padding-top: 5px; border-top: 1px solid #333;">
@@ -113,7 +48,7 @@
         <input type="number" id="bottomRowHeightInput" min="10" max="60" value="15" style="width: 50px; color: black;">
         <button id="applyBottomRowHeightBtn" class="height-apply-btn" data-target="bottom-data" style="margin-left: 5px;">적용</button>
     </div>
-    <button class="download-button" onclick="downloadImage('capture-area', 'noblesse_data_capture.png')">
+    <button class="download-button">
         🖼️ 테이블 영역 이미지 다운로드 (PNG)
     </button>
 </div>
@@ -190,7 +125,7 @@
                 <td contenteditable="true">NSACT2032891</td>
                 <td contenteditable="true">NBS001001004</td> 
             </tr>
-                        
+            
             <tr class="middle-notice-row">
                 <td colspan="5" contenteditable="true"> 
                     1. 위 공동구매 회원들이 클리어 데이터를 지시에 따라 진행하지 못하여 실패로 인해 회원가입 및 계정 비활성화되어 출금불가 <br>
