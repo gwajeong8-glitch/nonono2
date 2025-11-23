@@ -9,26 +9,26 @@
     
     <style>
         <style>
-    body {
-        /* 🚀 body에서 배경 이미지 제거 */
-        /* background: url('vip.png') no-repeat center 0px fixed;  <-- 이 줄을 제거 */
-        background: #111; /* 배경이 투명할 경우를 대비하여 어두운 색상 추가 */
-        background-size: auto; 
-        margin: 0;
-        padding: 0;
-        font-family: Arial, sans-serif;
-        color: white;
-        overflow-x: hidden; /* x축만 숨김 */
-        /* overflow: hidden; <-- 이 줄 대신 overflow-x: hidden; 만 사용 */
-    }
-    .wrap {
-        /* 🚀 [수정] 캡처 영역(`.wrap`)에 배경 이미지 직접 적용 */
-        background: url('vip.png') no-repeat center 0px; 
-        background-color: transparent; /* 배경색은 투명 유지 (png에만 의존) */
-        background-size: 1024px 490px; /* .wrap 크기에 맞추거나 auto로 조정 */
-        position: relative; /* 자식 요소의 위치 기준 */
-        overflow: hidden; /* 영역 밖 콘텐츠 숨김 */
-    }
+     body {
+            /* 🚀 배경 이미지 위치 조정 (200px 아래로) */
+            background: url('vip.png') no-repeat center 0px fixed; 
+            background-size: auto; 
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            color: white;
+            overflow: hidden; 
+        }
+
+        .wrap {
+            background-color: transparent; 
+        }
+      
+
+        .setting-panel {
+            background: rgba(0, 0, 0, 0.7); 
+            backdrop-filter: blur(5px);
+        }
     .setting-panel {
         /* 기존 스타일 유지 */
         background: rgba(0, 0, 0, 0.7); 
