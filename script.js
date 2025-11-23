@@ -36,12 +36,20 @@ function saveSettings() {
         
         // 📐 세 가지 높이 입력값 모두 저장
         if (topRowHeightInput) localStorage.setItem('topRowHeightValue', topRowHeightInput.value);
-        if (middleRowHeightInput) localStorage.setItem('middleRowHeightValue', middleRowRowHeightInput.value);
+        // * 수정: middleRowRowHeightInput 오타 수정
+        if (middleRowHeightInput) localStorage.setItem('middleRowHeightValue', middleRowHeightInput.value); 
         if (bottomRowHeightInput) localStorage.setItem('bottomRowHeightValue', bottomRowHeightInput.value);
 
         // 🎨 현재 선택된 색상 타겟도 저장
         const colorTarget = document.querySelector('input[name="colorTarget"]:checked');
         if (colorTarget) localStorage.setItem('colorTarget', colorTarget.value);
+        
+        // 🖱️ 현재 활성화된 왼쪽 메뉴도 저장 (클래스를 문자열로 저장)
+        const activeMenuItem = document.querySelector('.left-item.active');
+        if (activeMenuItem) {
+            const index = Array.from(document.querySelectorAll('.left-item')).indexOf(activeMenuItem);
+            localStorage.setItem('activeLeftMenuIndex', index.toString());
+        }
     }
 }
 
@@ -57,7 +65,7 @@ function loadSettings() {
             // dataTable 변수를 새로 로드된 DOM 요소로 업데이트
             dataTable = document.querySelector('.data-table');
             
-            // 📐 세 가지 높이 입력값 로드 및 UI 업데이트 (CSS 적용은 initializeRowHeightControl에서 담당)
+            // 📐 세 가지 높이 입력값 로드
             const savedTopHeight = localStorage.getItem('topRowHeightValue');
             const savedMiddleHeight = localStorage.getItem('middleRowHeightValue');
             const savedBottomHeight = localStorage.getItem('bottomRowHeightValue');
@@ -76,7 +84,7 @@ function loadSettings() {
             const savedColorTarget = localStorage.getItem('colorTarget') || 'text';
             const targetInput = document.querySelector(`input[name="colorTarget"][value="${savedColorTarget}"]`);
             if(targetInput) targetInput.checked = true;
-
+            
             console.log('이전 설정이 성공적으로 로드되었습니다. (Local Storage)');
         }
     }
@@ -117,6 +125,7 @@ function initializeCellInteraction() {
         dataTable.removeEventListener('input', saveSettings); 
     }
     
+    // 로드된 새로운 DOM에서 dataTable 변수 재할당
     dataTable = document.querySelector('.data-table');
     if (!dataTable) return;
 
@@ -169,15 +178,20 @@ function applyColor(color) {
 
 
 // 📏 글꼴 크기 적용 함수
-if (applyFontSizeBtn) {
-    applyFontSizeBtn.addEventListener('click', () => {
-        const newSize = fontSizeInput.value + 'px';
-        document.querySelectorAll('.data-table td.selected').forEach(cell => {
-            cell.style.fontSize = newSize;
-            cell.style.lineHeight = '1.2'; 
-        });
-        saveSettings();
+function initializeFontSizeControl() {
+    if (applyFontSizeBtn) {
+        applyFontSizeBtn.removeEventListener('click', handleApplyFontSize);
+        applyFontSizeBtn.addEventListener('click', handleApplyFontSize);
+    }
+}
+
+function handleApplyFontSize() {
+    const newSize = fontSizeInput.value + 'px';
+    document.querySelectorAll('.data-table td.selected').forEach(cell => {
+        cell.style.fontSize = newSize;
+        cell.style.lineHeight = '1.2'; 
     });
+    saveSettings();
 }
 
 
@@ -328,6 +342,16 @@ function stopResize() {
 // --- 4. 🖱️ 왼쪽 메뉴 항목 색상 토글 기능 ---
 function initializeLeftMenu() {
     const leftMenuItems = document.querySelectorAll('.left-item');
+    
+    // 저장된 인덱스를 로드하여 활성화
+    const savedIndex = localStorage.getItem('activeLeftMenuIndex');
+    if (savedIndex !== null) {
+        leftMenuItems.forEach(i => i.classList.remove('active'));
+        if (leftMenuItems[parseInt(savedIndex)]) {
+            leftMenuItems[parseInt(savedIndex)].classList.add('active');
+        }
+    }
+    
     leftMenuItems.forEach(item => {
         // 기존 리스너 제거 후 다시 등록
         item.removeEventListener('click', handleLeftMenuClick);
@@ -347,7 +371,10 @@ function applyRowHeight(selector, newHeight) {
     // 인라인 스타일로 적용
     document.querySelectorAll(selector).forEach(row => {
         row.style.height = newHeight;
-        row.querySelectorAll('td').forEach(td => td.style.height = newHeight);
+        row.querySelectorAll('td').forEach(td => {
+            td.style.height = newHeight;
+            td.style.lineHeight = '1.2'; // 높이 변경 시 라인 높이 일관성 유지
+        });
     });
 }
 
@@ -356,37 +383,47 @@ function applyRowHeight(selector, newHeight) {
 function initializeRowHeightControl() {
     
     if (applyTopRowHeightBtn && topRowHeightInput) {
-        applyTopRowHeightBtn.addEventListener('click', () => {
-            const newHeightValue = topRowHeightInput.value;
-            const newHeight = newHeightValue + 'px';
-            applyRowHeight('.top-data-header, .top-data-row', newHeight);
-            saveSettings();
-        });
+        applyTopRowHeightBtn.removeEventListener('click', handleApplyTopRowHeight);
+        applyTopRowHeightBtn.addEventListener('click', handleApplyTopRowHeight);
         // 로드 시에도 초기 높이 적용 (loadSettings가 값을 업데이트했을 경우)
         applyRowHeight('.top-data-header, .top-data-row', topRowHeightInput.value + 'px');
     }
 
     if (applyMiddleRowHeightBtn && middleRowHeightInput) {
-        applyMiddleRowHeightBtn.addEventListener('click', () => {
-            const newHeightValue = middleRowHeightInput.value;
-            const newHeight = newHeightValue + 'px';
-            applyRowHeight('.middle-notice-row, .middle-title-row', newHeight);
-            saveSettings();
-        });
+        applyMiddleRowHeightBtn.removeEventListener('click', handleApplyMiddleRowHeight);
+        applyMiddleRowHeightBtn.addEventListener('click', handleApplyMiddleRowHeight);
         // 로드 시에도 초기 높이 적용
-        applyRowHeight('.middle-notice-row, .middle-title-row', middleRowHeightInput.value + 'px');
+        applyRowHeight('.middle-notice-row', middleRowHeightInput.value + 'px');
     }
 
     if (applyBottomRowHeightBtn && bottomRowHeightInput) {
-        applyBottomRowHeightBtn.addEventListener('click', () => {
-            const newHeightValue = bottomRowHeightInput.value;
-            const newHeight = newHeightValue + 'px';
-            applyRowHeight('.bottom-data-header, .bottom-data-row', newHeight);
-            saveSettings();
-        });
+        applyBottomRowHeightBtn.removeEventListener('click', handleApplyBottomRowHeight);
+        applyBottomRowHeightBtn.addEventListener('click', handleApplyBottomRowHeight);
         // 로드 시에도 초기 높이 적용
         applyRowHeight('.bottom-data-header, .bottom-data-row', bottomRowHeightInput.value + 'px');
     }
+}
+
+function handleApplyTopRowHeight() {
+    const newHeightValue = topRowHeightInput.value;
+    const newHeight = newHeightValue + 'px';
+    applyRowHeight('.top-data-header, .top-data-row', newHeight);
+    saveSettings();
+}
+
+function handleApplyMiddleRowHeight() {
+    const newHeightValue = middleRowHeightInput.value;
+    const newHeight = newHeightValue + 'px';
+    // middle-title-row가 HTML에 없으므로, middle-notice-row에만 적용
+    applyRowHeight('.middle-notice-row', newHeight); 
+    saveSettings();
+}
+
+function handleApplyBottomRowHeight() {
+    const newHeightValue = bottomRowHeightInput.value;
+    const newHeight = newHeightValue + 'px';
+    applyRowHeight('.bottom-data-header, .bottom-data-row', newHeight);
+    saveSettings();
 }
 
 
@@ -402,10 +439,12 @@ document.addEventListener('DOMContentLoaded', () => {
     //    * 중요: 이 순서대로 실행되어야 DOM 요소에 이벤트 리스너가 정확히 연결됩니다.
     initializeCellInteraction(); 
     initializeColorTargetControl(); 
+    initializeFontSizeControl();
     initializeResizers(); 
     initializeLeftMenu(); 
     initializeRowHeightControl(); // UI 입력값을 바탕으로 최종 높이 적용
 
     // 다운로드 버튼에 이벤트 핸들러 할당
-    document.querySelector('.download-button').onclick = () => downloadImage('capture-area', 'noblesse_data_capture.png');
+    document.querySelector('.download-button').removeEventListener('click', downloadImage);
+    document.querySelector('.download-button').addEventListener('click', () => downloadImage('capture-area', 'noblesse_data_capture.png'));
 });
