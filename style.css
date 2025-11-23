@@ -21,10 +21,6 @@
     margin:20px auto 0 auto; 
     position:relative;
     overflow: hidden;
-    /* 🚀 [추가] 배경 이미지를 여기에 직접 지정하여 캡처되도록 함 */
-    background: url('vip.png') no-repeat center 0px; 
-    background-size: 1024px 490px; /* 필요한 경우 크기 지정 */
-    /* ... 나머지 스타일은 그대로 유지 ... */
 }
 
 /* 상단 탭 */
